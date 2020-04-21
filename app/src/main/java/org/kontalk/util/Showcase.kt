@@ -38,8 +38,13 @@ class Showcase {
             Hint(key, view, title, message)
     private class ViewHint(override val key: String, override val view: Int, override val title: Int, override val message: Int):
             Hint(key, view, title, message)
-    private class ToolbarHint(override val key: String, override val view: Int, override val title: Int, override val message: Int):
-            Hint(key, view, title, message)
+    // FIXME this one still doesn't work properly
+    private class MenuHint(override val key: String, override val view: Int, override val title: Int, override val message: Int):
+            Hint(key, view, title, message) {
+        val toolbarViewId = R.id.toolbar
+    }
+    private class ToolbarHint(override val key: String, override val title: Int, override val message: Int):
+            Hint(key, R.id.toolbar, title, message)
 
     companion object {
 
@@ -49,18 +54,21 @@ class Showcase {
             HINTS[ConversationsFragment::class.java.name] = arrayOf(
                     FloatingActionMenuHint("fab", R.id.action,
                             R.string.showcase_conversations_compose_title,
-                            R.string.showcase_conversations_compose_message)
+                            R.string.showcase_conversations_compose_message),
+                    MenuHint("dark_theme", R.id.menu_settings,
+                            R.string.showcase_conversations_dark_mode_title,
+                            R.string.showcase_conversations_dark_mode_message)
             )
             HINTS[ComposeMessageFragment::class.java.name] = arrayOf(
                     ViewHint("attach", R.id.attach_button,
                             R.string.showcase_composer_attach_title,
                             R.string.showcase_composer_attach_message),
-                    ToolbarHint("contact_info", R.id.toolbar,
-                        R.string.showcase_composer_toolbar_single_title,
-                        R.string.showcase_composer_toolbar_single_message)
+                    ToolbarHint("contact_info",
+                            R.string.showcase_composer_toolbar_single_title,
+                            R.string.showcase_composer_toolbar_single_message)
             )
             HINTS[GroupMessageFragment::class.java.name] = arrayOf(
-                    ToolbarHint("group_info", R.id.toolbar,
+                    ToolbarHint("group_info",
                             R.string.showcase_composer_toolbar_group_title,
                             R.string.showcase_composer_toolbar_group_message)
             )
@@ -117,18 +125,31 @@ class Showcase {
                         is ToolbarHint -> {
                             fragment.activity?.findViewById<Toolbar>(hint.view)
                         }
+                        is MenuHint -> {
+                            fragment.activity?.findViewById<Toolbar>(hint.toolbarViewId)
+                        }
                         else -> null
                     }
                     // for when we'll need it...
                     val rect: Rect? = null
+                    val menu: Int = when (hint) {
+                        is MenuHint -> {
+                            hint.view
+                        }
+                        else -> 0
+                    }
 
                     val targetConfig: TapTarget? = when {
-                        view != null -> {
+                        view != null && menu == 0 -> {
                             TapTarget.forView(view,
                                     fragment.getString(hint.title), fragment.getString(hint.message))
                         }
                         rect != null -> {
                             TapTarget.forBounds(rect,
+                                    fragment.getString(hint.title), fragment.getString(hint.message))
+                        }
+                        menu > 0 -> {
+                            TapTarget.forToolbarOverflow(view as Toolbar,
                                     fragment.getString(hint.title), fragment.getString(hint.message))
                         }
                         else -> {
@@ -140,6 +161,7 @@ class Showcase {
                         TapTargetView.showFor(fragment.activity, it
                                 .transparentTarget(true)
                                 .cancelable(true)
+                                .textColor(R.color.showcase_text_color)
                                 // TODO other settings
                                 .targetRadius(60)
                         )

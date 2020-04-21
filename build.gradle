@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext {
-        kotlinVersion = '1.3.70'
+        kotlinVersion = '1.3.72'
     }
     repositories {
         jcenter()
@@ -11,10 +11,14 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.1'
+        classpath 'com.android.tools.build:gradle:3.6.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath 'com.google.gms:google-services:4.3.3'
         classpath 'io.fabric.tools:gradle:1.+'
+        classpath('fr.avianey.androidsvgdrawable:gradle-plugin:+') {
+            // should be excluded to avoid conflict
+            exclude group: 'xerces'
+        }
         classpath('com.hiya:jacoco-android:0.2') {
             exclude group: 'org.codehaus.groovy', module: 'groovy-all'
         }
@@ -38,13 +42,13 @@ allprojects {
     evaluationDependsOn ":client-common-java"
     ext {
         applicationId = 'org.kontalk'
-        versionCode = 457
-        versionName = '4.4.0-beta7'
+        versionCode = 463
+        versionName = '4.4.0-beta13'
         minSdkVersion = 16
         targetSdkVersion = 29
         compileSdkVersion = 29
         smackVersion = project(':client-common-java').smackVersion
-        bouncyCastleVersion = '1.64'
+        bouncyCastleVersion = '1.65'
         anyMapsVersion = '962c4b5cf8'
 
         travisBuild = System.getenv("TRAVIS") == "true"

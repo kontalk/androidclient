@@ -377,7 +377,9 @@ public class X509Bridge {
         /*
          * Checks that this certificate has indeed been correctly signed.
          */
-        X509Certificate cert = new JcaX509CertificateConverter().getCertificate(holder);
+        X509Certificate cert = new JcaX509CertificateConverter()
+            .setProvider(PGP.PROVIDER)
+            .getCertificate(holder);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             cert.verify(pubKey, PGP.PROVIDER);
         }

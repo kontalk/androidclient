@@ -27,9 +27,9 @@ import java.util.Locale;
 
 import android.content.Context;
 
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.RotatingFileWriter;
-import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -127,7 +127,7 @@ public final class Log {
                 }
                 catch (IOException e) {
                     // disable logging but keep the file
-                    SystemUtils.close(sLogFileWriter);
+                    DataUtils.close(sLogFileWriter);
                     sLogFileWriter = null;
                 }
             }

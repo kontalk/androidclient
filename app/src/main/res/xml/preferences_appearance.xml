@@ -19,6 +19,14 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <ListPreference
+        android:key="pref_ui_theme"
+        android:title="@string/pref_ui_theme"
+        android:summary="%s"
+        android:icon="@drawable/ic_pref_appearance"
+        android:entries="@array/uitheme_labels"
+        android:entryValues="@array/uitheme_values"
+        android:defaultValue="@string/pref_default_ui_theme"/>
+    <ListPreference
         android:key="pref_font_size"
         android:title="@string/pref_font_size"
         android:summary="%s"
@@ -28,13 +36,11 @@
         android:defaultValue="@string/pref_default_font_size"/>
     <CheckBoxPreference android:key="pref_custom_background"
         android:title="@string/pref_custom_background"
-        android:summary="@string/pref_title_custom_background"
-        />
+        android:summary="@string/pref_title_custom_background" />
     <Preference android:key="pref_background_uri"
         android:title="@string/pref_background_uri"
         android:summary="@string/pref_title_background_uri"
-        android:dependency="pref_custom_background"
-        />
+        android:dependency="pref_custom_background" />
     <ListPreference
         android:key="pref_balloons"
         android:title="@string/pref_balloons"

@@ -26,6 +26,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewStub;
 
+import androidx.annotation.ColorInt;
+
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.message.MessageComponent;
@@ -84,6 +86,7 @@ public class EventMessageTheme implements MessageListItemTheme {
                     highlight, args);
 
             if (view != null) {
+                view.onApplyTheme(this);
                 processComponentView(view);
                 mContent.addContent(view);
             }
@@ -137,5 +140,11 @@ public class EventMessageTheme implements MessageListItemTheme {
             mContent.removeView((View) view);
             view.unbind();
         }
+    }
+
+    @ColorInt
+    @Override
+    public int getTextColor() {
+        return -1;
     }
 }

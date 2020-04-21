@@ -64,7 +64,7 @@ import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.message.TextComponent;
 import org.kontalk.util.CPIMMessage;
-import org.kontalk.util.SystemUtils;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.XMPPUtils;
 
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK;
@@ -277,7 +277,7 @@ public class PGPCoder extends Coder {
             }
 
             // check if secret key matches
-            Iterator<PGPPublicKeyEncryptedData> it = enc.getEncryptedDataObjects();
+            Iterator<PGPEncryptedData> it = enc.getEncryptedDataObjects();
             PGPPrivateKey sKey = null;
             PGPPublicKeyEncryptedData pbe = null;
 
@@ -285,7 +285,7 @@ public class PGPCoder extends Coder {
             long ourKeyID = mKey.getEncryptKeyPair().getPrivateKey().getKeyID();
 
             while (sKey == null && it.hasNext()) {
-                pbe = it.next();
+                pbe = (PGPPublicKeyEncryptedData) it.next();
 
                 if (pbe.getKeyID() == ourKeyID)
                     sKey = mKey.getEncryptKeyPair().getPrivateKey();
@@ -526,7 +526,7 @@ public class PGPCoder extends Coder {
         }
 
         finally {
-            SystemUtils.close(cDataIn);
+            DataUtils.close(cDataIn);
         }
 
         Message message;
@@ -648,7 +648,7 @@ public class PGPCoder extends Coder {
             }
 
             // check if secret key matches
-            Iterator<PGPPublicKeyEncryptedData> it = enc.getEncryptedDataObjects();
+            Iterator<PGPEncryptedData> it = enc.getEncryptedDataObjects();
             PGPPrivateKey sKey = null;
             PGPPublicKeyEncryptedData pbe = null;
 
@@ -656,7 +656,7 @@ public class PGPCoder extends Coder {
             long ourKeyID = mKey.getEncryptKeyPair().getPrivateKey().getKeyID();
 
             while (sKey == null && it.hasNext()) {
-                pbe = it.next();
+                pbe = (PGPPublicKeyEncryptedData) it.next();
 
                 if (pbe.getKeyID() == ourKeyID)
                     sKey = mKey.getEncryptKeyPair().getPrivateKey();
@@ -784,7 +784,7 @@ public class PGPCoder extends Coder {
         }
 
         finally {
-            SystemUtils.close(cDataIn);
+            DataUtils.close(cDataIn);
         }
     }
 

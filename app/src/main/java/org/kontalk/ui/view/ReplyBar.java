@@ -30,12 +30,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.kontalk.R;
+import org.kontalk.util.XMPPUtils;
 
 
 /**
- * The composer bar.
+ * The reply view for the composer bar.
  * @author Daniele Ricci
- * @author Andrea Cappelli
  */
 public class ReplyBar extends RelativeLayout {
 
@@ -120,9 +120,10 @@ public class ReplyBar extends RelativeLayout {
         return mMessageId;
     }
 
-    public void show(long msgId, CharSequence sender, CharSequence text) {
+    public void show(long msgId, String jid, CharSequence sender, CharSequence text) {
         mMessageId = msgId;
         mSender.setText(sender);
+        mSender.setTextColor(XMPPUtils.getJIDColor(jid));
         mText.setText(text);
         setVisibility(VISIBLE);
         if (mDividerView != null)

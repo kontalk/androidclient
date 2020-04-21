@@ -17,10 +17,16 @@
  -->
 
 <resources>
+    <dimen name="message_font_size_small">14sp</dimen>
+    <dimen name="message_font_size_normal">16sp</dimen>
+    <dimen name="message_font_size_large">20sp</dimen>
+
     <dimen name="message_text_width">230dp</dimen>
     <dimen name="message_audio_width">180dp</dimen>
     <dimen name="dateview_text_size">11sp</dimen>
     <dimen name="conv_list_margin_left">8dp</dimen>
+    <!-- workaround for unknown layout issue -->
+    <dimen name="audio_content_seekbar_margin_top">8dp</dimen>
 
     <dimen name="avatar_list_item_height">72dp</dimen>
     <dimen name="indexed_list_margin">48dp</dimen>

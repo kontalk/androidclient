@@ -30,6 +30,18 @@
         <item>@string/pref_vibrate_label_never</item>
     </string-array>
 
+    <string-array name="uitheme_values" translatable="false">
+        <item>default</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+
+    <string-array name="uitheme_labels">
+        <item>@string/pref_uitheme_label_default</item>
+        <item>@string/pref_uitheme_label_light</item>
+        <item>@string/pref_uitheme_label_dark</item>
+    </string-array>
+
     <string-array name="fontsize_values" translatable="false">
         <item>small</item>
         <item>medium</item>

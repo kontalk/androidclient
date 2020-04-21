@@ -1,0 +1,82 @@
+[
+  {
+    "name" : "balloon_hangout_block_incoming.*",
+    "qualifiers" : [],
+    "stretch" : {
+      "x" : [
+        [34, 35]
+      ],
+      "y" : [
+        [22, 23]
+      ]
+    },
+    "content" : {
+      "x" : [
+        [17, 54]
+      ],
+      "y" : [
+        [4, 39]
+      ]
+    }
+  },
+  {
+    "name" : "balloon_hangout_incoming.*",
+    "qualifiers" : [],
+    "stretch" : {
+      "x" : [
+        [34, 35]
+      ],
+      "y" : [
+        [26, 27]
+      ]
+    },
+    "content" : {
+      "x" : [
+        [17, 54]
+      ],
+      "y" : [
+        [8, 43]
+      ]
+    }
+  },
+  {
+    "name" : "balloon_hangout_block_outgoing.*",
+    "qualifiers" : [],
+    "stretch" : {
+      "x" : [
+        [34, 35]
+      ],
+      "y" : [
+        [22, 23]
+      ]
+    },
+    "content" : {
+      "x" : [
+        [11, 48]
+      ],
+      "y" : [
+        [4, 39]
+      ]
+    }
+  },
+  {
+    "name" : "balloon_hangout_outgoing.*",
+    "qualifiers" : [],
+    "stretch" : {
+      "x" : [
+        [34, 35]
+      ],
+      "y" : [
+        [26, 27]
+      ]
+    },
+    "content" : {
+      "x" : [
+        [11, 48]
+      ],
+      "y" : [
+        [8, 43]
+      ]
+    }
+  }
+]

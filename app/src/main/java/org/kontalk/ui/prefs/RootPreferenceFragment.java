@@ -45,8 +45,9 @@ public abstract class RootPreferenceFragment extends PreferenceFragmentCompat {
         if (context instanceof Callback) {
             mCallback = (Callback) context;
         }
-        // with the exception of the notification preferences activity...
-        else if (!(context instanceof NotificationPreferencesActivity)) {
+        // with the exception of the notification and account preferences activities...
+        else if (!(context instanceof NotificationPreferencesActivity) &&
+            !(context instanceof AccountPreferencesActivity)) {
             throw new IllegalStateException("Owner must implement Callback interface");
         }
     }

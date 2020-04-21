@@ -55,7 +55,7 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
-import org.kontalk.util.SystemUtils;
+import org.kontalk.util.DataUtils;
 
 
 /**
@@ -665,7 +665,7 @@ public class MessagesProvider extends ContentProvider {
                 qb.appendWhere(Groups.GROUP_JID + "=? COLLATE NOCASE");
                 if (selectionArgs != null) {
                     // conditions appended here will get added before the caller-supplied selection
-                    selectionArgs = SystemUtils.concatenate(new String[] { uri.getLastPathSegment() },
+                    selectionArgs = DataUtils.concatenate(new String[] { uri.getLastPathSegment() },
                         selectionArgs);
                 }
                 else {
@@ -679,7 +679,7 @@ public class MessagesProvider extends ContentProvider {
                 qb.appendWhere(Groups.GROUP_JID + "=? COLLATE NOCASE");
                 if (selectionArgs != null) {
                     // conditions appended here will get added before the caller-supplied selection
-                    selectionArgs = SystemUtils.concatenate(new String[] { uri.getPathSegments().get(1) },
+                    selectionArgs = DataUtils.concatenate(new String[] { uri.getPathSegments().get(1) },
                         selectionArgs);
                 }
                 else {
@@ -1117,7 +1117,7 @@ public class MessagesProvider extends ContentProvider {
                 if (selection != null) {
                     where += " AND (" + selection + ")";
                     if (selectionArgs != null)
-                        args = SystemUtils.concatenate(args, selectionArgs);
+                        args = DataUtils.concatenate(args, selectionArgs);
                 }
                 break;
             }
@@ -1130,7 +1130,7 @@ public class MessagesProvider extends ContentProvider {
                 if (selection != null) {
                     where += " AND (" + selection + ")";
                     if (selectionArgs != null)
-                        args = SystemUtils.concatenate(args, selectionArgs);
+                        args = DataUtils.concatenate(args, selectionArgs);
                 }
                 break;
             }
@@ -1142,7 +1142,7 @@ public class MessagesProvider extends ContentProvider {
                 if (selection != null) {
                     where += " AND (" + selection + ")";
                     if (selectionArgs != null)
-                        args = SystemUtils.concatenate(args, selectionArgs);
+                        args = DataUtils.concatenate(args, selectionArgs);
                 }
                 break;
             }
@@ -1343,7 +1343,7 @@ public class MessagesProvider extends ContentProvider {
                 if (selection != null) {
                     where += " AND (" + selection + ")";
                     if (selectionArgs != null)
-                        args = SystemUtils.concatenate(args, selectionArgs);
+                        args = DataUtils.concatenate(args, selectionArgs);
                 }
                 break;
 
@@ -1355,7 +1355,7 @@ public class MessagesProvider extends ContentProvider {
                 if (selection != null) {
                     where += " AND (" + selection + ")";
                     if (selectionArgs != null)
-                        args = SystemUtils.concatenate(args, selectionArgs);
+                        args = DataUtils.concatenate(args, selectionArgs);
                 }
                 break;
 
@@ -1373,7 +1373,7 @@ public class MessagesProvider extends ContentProvider {
                 if (selection != null) {
                     where += " AND (" + selection + ")";
                     if (selectionArgs != null)
-                        args = SystemUtils.concatenate(args, selectionArgs);
+                        args = DataUtils.concatenate(args, selectionArgs);
                 }
                 break;
 
@@ -1384,7 +1384,7 @@ public class MessagesProvider extends ContentProvider {
                 if (selection != null) {
                     where += " AND (" + selection + ")";
                     if (selectionArgs != null)
-                        args = SystemUtils.concatenate(args, selectionArgs);
+                        args = DataUtils.concatenate(args, selectionArgs);
                 }
                 break;
 
@@ -1395,7 +1395,7 @@ public class MessagesProvider extends ContentProvider {
                 if (selection != null) {
                     where += " AND (" + selection + ")";
                     if (selectionArgs != null)
-                        args = SystemUtils.concatenate(args, selectionArgs);
+                        args = DataUtils.concatenate(args, selectionArgs);
                 }
                 break;
 
@@ -1406,7 +1406,7 @@ public class MessagesProvider extends ContentProvider {
                 if (selection != null) {
                     where += " AND (" + selection + ")";
                     if (selectionArgs != null)
-                        args = SystemUtils.concatenate(args, selectionArgs);
+                        args = DataUtils.concatenate(args, selectionArgs);
                 }
                 break;
 

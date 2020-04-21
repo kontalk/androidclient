@@ -18,6 +18,8 @@
 
 package org.kontalk.client;
 
+import java.util.Collections;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 
@@ -111,6 +113,11 @@ public class EndpointServer {
      */
     public interface EndpointServerProvider {
         /**
+         * Returns a server list.
+         */
+        ServerList list();
+
+        /**
          * Returns the next server that hasn't been picked yet.
          */
         EndpointServer next();
@@ -138,23 +145,32 @@ public class EndpointServer {
         }
 
         @Override
+        public ServerList list() {
+            return new ServerList(new Date(), Collections.singletonList(getProvidedServer()));
+        }
+
+        private EndpointServer getProvidedServer() {
+            if (mProvided == null) {
+                try {
+                    return new EndpointServer(mUri);
+                }
+                catch (Exception e) {
+                    // custom is not valid
+                    return null;
+                }
+            }
+
+            return mProvided;
+        }
+
+        @Override
         public EndpointServer next() {
             if (mCalled) {
                 return null;
             }
             else {
                 mCalled = true;
-                if (mProvided == null) {
-                    try {
-                        return new EndpointServer(mUri);
-                    }
-                    catch (Exception e) {
-                        // custom is not valid
-                        return null;
-                    }
-                }
-
-                return mProvided;
+                return getProvidedServer();
             }
         }
 

@@ -26,6 +26,8 @@ import java.util.Map;
 import com.android.providers.contacts.ContactLocaleUtils;
 import com.android.providers.contacts.FastScrollingIndexCache;
 
+import org.jxmpp.util.XmppStringUtils;
+
 import android.annotation.SuppressLint;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -55,6 +57,7 @@ import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Keys;
@@ -495,7 +498,7 @@ public class UsersProvider extends ContentProvider {
                             return 0;
                         }
                         else {
-                            return resync();
+                            return resync(uri.getQueryParameter(Users.XMPP_DOMAIN));
                         }
                     }
 
@@ -578,7 +581,7 @@ public class UsersProvider extends ContentProvider {
     }
 
     /** Triggers a complete resync of the users database. */
-    private int resync() {
+    private int resync(String xmppDomain) {
         Context context = getContext();
         ContentResolver cr = context.getContentResolver();
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -589,6 +592,8 @@ public class UsersProvider extends ContentProvider {
         int count = 0;
 
         try {
+            MyAccount myAccount = Kontalk.get().getDefaultAccount();
+
             // delete old users content
             try {
                 db.execSQL("DELETE FROM " + TABLE_USERS_OFFLINE);
@@ -626,12 +631,13 @@ public class UsersProvider extends ContentProvider {
                     where + " (" +
                         // this will filter out RawContacts from Kontalk
                         RawContacts.ACCOUNT_TYPE + " IS NULL OR " +
-                        RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?))",
+                        RawContacts.ACCOUNT_TYPE + " <> ?)",
                     new String[]{
-                        Authenticator.ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE_LEGACY
+                        Authenticator.ACCOUNT_TYPE
                     }, null);
 
                 if (phones != null) {
+                    String myNumber = myAccount != null ? myAccount.getPhoneNumber() : null;
                     while (phones.moveToNext()) {
                         String number = phones.getString(0);
                         String name = phones.getString(1);
@@ -651,7 +657,7 @@ public class UsersProvider extends ContentProvider {
                         // fix number
                         try {
                             number = RegistrationService.fixNumber(context, number,
-                                Authenticator.getDefaultAccountName(context), 0);
+                                myNumber, 0);
                         }
                         catch (Exception e) {
                             Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
@@ -663,15 +669,14 @@ public class UsersProvider extends ContentProvider {
                             String hash = XMPPUtils.createLocalpart(number);
                             String lookupKey = phones.getString(2);
                             long contactId = phones.getLong(3);
-                            String jid = XMPPUtils.createLocalJID(getContext(), hash);
+                            String jid = myAccount != null ?
+                                myAccount.createLocalJID(hash) :
+                                XmppStringUtils.completeJidFrom(hash, xmppDomain);
 
                             addResyncContact(db, stm, onlineUpd, onlineIns,
                                 number, jid, name,
                                 lookupKey, contactId, false);
                             count++;
-                        }
-                        catch (IllegalArgumentException iae) {
-                            Log.w(SyncAdapter.TAG, "doing sync with no server?");
                         }
                         catch (SQLiteConstraintException sqe) {
                             // skip duplicate number
@@ -708,6 +713,7 @@ public class UsersProvider extends ContentProvider {
                     }
 
                     if (phones != null) {
+                        String myNumber = myAccount != null ? myAccount.getPhoneNumber() : null;
                         while (phones.moveToNext()) {
                             String name = phones.getString(phones.getColumnIndex("name"));
                             String number = phones.getString(phones.getColumnIndex("number"));
@@ -726,7 +732,7 @@ public class UsersProvider extends ContentProvider {
                             // fix number
                             try {
                                 number = RegistrationService.fixNumber(context, number,
-                                    Authenticator.getDefaultAccountName(context), 0);
+                                    myNumber, 0);
                             }
                             catch (Exception e) {
                                 Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
@@ -736,7 +742,9 @@ public class UsersProvider extends ContentProvider {
 
                             try {
                                 String hash = XMPPUtils.createLocalpart(number);
-                                String jid = XMPPUtils.createLocalJID(getContext(), hash);
+                                String jid = myAccount != null ?
+                                    myAccount.createLocalJID(hash) :
+                                    XmppStringUtils.completeJidFrom(hash, xmppDomain);
                                 long contactId = phones.getLong(phones.getColumnIndex(BaseColumns._ID));
 
                                 addResyncContact(db, stm, onlineUpd, onlineIns,
@@ -744,9 +752,6 @@ public class UsersProvider extends ContentProvider {
                                     null, contactId,
                                     false);
                                 count++;
-                            }
-                            catch (IllegalArgumentException iae) {
-                                Log.w(SyncAdapter.TAG, "doing sync with no server?");
                             }
                             catch (SQLiteConstraintException sqe) {
                                 // skip duplicate number
@@ -756,38 +761,38 @@ public class UsersProvider extends ContentProvider {
                 }
 
                 // try to add account number with display name
-                String ownNumber = Authenticator.getDefaultAccountName(getContext());
-                if (ownNumber != null) {
-                    String ownName = Authenticator.getDefaultDisplayName(getContext());
-                    String fingerprint = null;
-                    byte[] publicKeyData = null;
-                    try {
-                        PersonalKey myKey = Kontalk.get().getPersonalKey();
-                        if (myKey != null) {
-                            fingerprint = myKey.getFingerprint();
-                            publicKeyData = myKey.getEncodedPublicKeyRing();
-                        }
-                    }
-                    catch (Exception e) {
-                        Log.w(SyncAdapter.TAG, "unable to load personal key", e);
-                    }
-                    try {
-                        String hash = XMPPUtils.createLocalpart(ownNumber);
-                        String jid = XMPPUtils.createLocalJID(getContext(), hash);
+                if (myAccount == null) {
+                    Log.w(SyncAdapter.TAG, "no account found?!?");
+                    return 0;
+                }
 
-                        addResyncContact(db, stm, onlineUpd, onlineIns,
-                            ownNumber, jid, ownName,
-                            null, null,
-                            true);
-                        insertOrUpdateKey(jid, fingerprint, publicKeyData, false);
-                        count++;
+                String ownNumber = myAccount.getPhoneNumber();
+                String ownName = myAccount.getDisplayName();
+                String fingerprint = null;
+                byte[] publicKeyData = null;
+                try {
+                    PersonalKey myKey = Kontalk.get().getPersonalKey();
+                    if (myKey != null) {
+                        fingerprint = myKey.getFingerprint();
+                        publicKeyData = myKey.getEncodedPublicKeyRing();
                     }
-                    catch (IllegalArgumentException iae) {
-                        Log.w(SyncAdapter.TAG, "doing sync with no server?");
-                    }
-                    catch (SQLiteConstraintException sqe) {
-                        // skip duplicate number
-                    }
+                }
+                catch (Exception e) {
+                    Log.w(SyncAdapter.TAG, "unable to load personal key", e);
+                }
+                try {
+                    String hash = XMPPUtils.createLocalpart(ownNumber);
+                    String jid = myAccount.createLocalJID(hash);
+
+                    addResyncContact(db, stm, onlineUpd, onlineIns,
+                        ownNumber, jid, ownName,
+                        null, null,
+                        true);
+                    insertOrUpdateKey(jid, fingerprint, publicKeyData, false);
+                    count++;
+                }
+                catch (SQLiteConstraintException sqe) {
+                    // skip duplicate number
                 }
 
                 db.setTransactionSuccessful();
@@ -1113,10 +1118,11 @@ public class UsersProvider extends ContentProvider {
             new String[] { jid });
     }
 
-    public static int resync(Context context) {
+    public static int resync(Context context, String xmppDomain) {
         // update users database
         Uri uri = Users.CONTENT_URI.buildUpon()
             .appendQueryParameter(Users.RESYNC, "true")
+            .appendQueryParameter(Users.XMPP_DOMAIN, xmppDomain)
             .build();
         return context.getContentResolver().update(uri, new ContentValues(), null, null);
     }

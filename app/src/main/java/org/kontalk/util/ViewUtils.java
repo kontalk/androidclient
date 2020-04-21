@@ -31,14 +31,20 @@ import com.vanniktech.emoji.EmojiManager;
 import org.jivesoftware.smack.util.Async;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.text.SpannableStringBuilder;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.TextView;
+
+import androidx.core.widget.TextViewCompat;
+
+import org.kontalk.R;
 
 
 /**
@@ -133,6 +139,44 @@ public class ViewUtils {
         EmojiManager.getInstance().replaceWithImages(view.getContext(),
             emojiSpannable, defaultEmojiSize, defaultEmojiSize);
         return emojiSpannable;
+    }
+
+    /**
+     * Sets the text style based on the text size user preference.
+     * @param textView the view to apply the style
+     * @param applyBaseTheme true to apply a base TextAppearance first
+     * @deprecated applyBaseTheme should not exist, a style is the solution here
+     */
+    @Deprecated
+    public static void setMessageBodyTextStyle(TextView textView, boolean applyBaseTheme) {
+        Context context = textView.getContext();
+        String size = Preferences.getFontSize(context);
+        int sizeId;
+        switch (size) {
+            case "small":
+                sizeId = R.dimen.message_font_size_small;
+                break;
+            case "large":
+                sizeId = R.dimen.message_font_size_large;
+                break;
+            default:
+                sizeId = R.dimen.message_font_size_normal;
+                break;
+        }
+
+        if (applyBaseTheme) {
+            // set a baseline theme
+            int[] attrs = {android.R.attr.textAppearance};
+            TypedArray ta = context.getTheme().obtainStyledAttributes(R.style.AppTheme, attrs);
+            TextViewCompat.setTextAppearance(textView, ta.getResourceId(0, 0));
+            ta.recycle();
+        }
+
+        // now apply the text size
+        float textSize = context.getResources().getDimension(sizeId);
+        if (textSize > 0) {
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+        }
     }
 
 }

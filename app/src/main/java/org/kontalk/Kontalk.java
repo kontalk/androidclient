@@ -24,9 +24,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
-import com.vanniktech.emoji.EmojiManager;
-import com.vanniktech.emoji.ios.IosEmojiProvider;
-
 import org.bouncycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -40,11 +37,17 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Handler;
+import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 import androidx.annotation.RequiresApi;
 import androidx.multidex.MultiDexApplication;
 
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
@@ -52,6 +55,7 @@ import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.NetworkStateReceiver;
+import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.SystemBootStartup;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.msgcenter.IPushService;
@@ -60,9 +64,11 @@ import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.service.msgcenter.SecureConnectionManager;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
+import org.kontalk.ui.ConversationsFragment;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
 import org.kontalk.util.CustomSimpleXmppStringprep;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.Showcase;
 import org.kontalk.util.SystemUtils;
@@ -82,17 +88,7 @@ public class Kontalk extends MultiDexApplication {
      */
     private static Kontalk sInstance;
 
-    private PersonalKey mDefaultKey;
-
-    /**
-     * Passphrase to decrypt the personal private key.
-     * This should be asked to the user and stored in memory - otherwise use
-     * a dummy password if user doesn't want to remember it (or optionally do
-     * not encrypt the private key).
-     * For the moment, this is random-generated and stored as the account
-     * password in Android Account Manager.
-     */
-    private String mKeyPassphrase;
+    private MyAccount mDefaultAccount;
 
     /**
      * Keep-alive reference counter.
@@ -104,6 +100,7 @@ public class Kontalk extends MultiDexApplication {
      * Call {@link #hold} to increment the counter, {@link #release} to
      * decrement it.
      */
+    @SuppressWarnings("JavadocReference")
     private int mRefCounter;
 
     /** Messages controller singleton instance. */
@@ -130,17 +127,17 @@ public class Kontalk extends MultiDexApplication {
                         ReportingManager.unregister(Kontalk.this);
                     }
                 }
+                // UI theme
+                else if ("pref_ui_theme".equals(key)) {
+                    Preferences.applyTheme(Kontalk.this);
+                }
                 // actions requiring an account
-                else if (Authenticator.getDefaultAccount(Kontalk.this) != null) {
+                else if (getDefaultAccount() != null) {
                     // manual server address
                     if ("pref_network_uri".equals(key)) {
-                        // temporary measure for users coming from old betas
-                        // this is triggered because manual server address is cleared
-                        if (Authenticator.getDefaultServer(Kontalk.this) != null) {
-                            // just restart the message center for now
-                            Log.w(TAG, "network address changed");
-                            MessageCenterService.restart(Kontalk.this);
-                        }
+                        // just restart the message center for now
+                        Log.w(TAG, "network address changed");
+                        MessageCenterService.restart(Kontalk.this);
                     }
                     // hide presence flag / encrypt user data flag
                     else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
@@ -201,9 +198,8 @@ public class Kontalk extends MultiDexApplication {
             registerNetworkStateReceiver();
         }
 
-        // init emoji manager
-        // FIXME this is taking a very long time
-        EmojiManager.install(new IosEmojiProvider());
+        // init UI settings
+        Preferences.initUI(this);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(mPrefListener);
@@ -211,7 +207,7 @@ public class Kontalk extends MultiDexApplication {
         // TODO listen for changes to phone numbers
 
         AccountManager am = AccountManager.get(this);
-        Account account = Authenticator.getDefaultAccount(am);
+        MyAccount account = getDefaultAccount();
         if (account != null) {
             // register account change listener
             final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
@@ -248,9 +244,20 @@ public class Kontalk extends MultiDexApplication {
             am.addOnAccountsUpdatedListener(listener, null, true);
 
             // TODO remove after a few release iterations
-            if (Authenticator.getServiceTermsURL(am, account) == null) {
-                am.setUserData(account, Authenticator.DATA_SERVICE_TERMS_URL,
+            if (Authenticator.getDefaultServiceTermsURL(this) == null) {
+                // default service terms url
+                am.setUserData(account.getSystemAccount(),
+                    Authenticator.DATA_SERVICE_TERMS_URL,
                     getString(R.string.help_default_KPN_service_terms_url));
+            }
+
+            // TODO remove after a few release iterations
+            if (Authenticator.getDefaultServerList(this) == null) {
+                // default server list
+                ServerList list = ServerListUpdater.getCurrentList(this);
+                am.setUserData(account.getSystemAccount(),
+                    Authenticator.DATA_SERVER_LIST,
+                    DataUtils.serializeProperties(list.toProperties()));
             }
         }
         else {
@@ -271,42 +278,61 @@ public class Kontalk extends MultiDexApplication {
      */
     @Deprecated
     private void disableHintsForUpgrade() {
-        if (Authenticator.getDefaultAccount(this) != null) {
+        if (getDefaultAccount() != null) {
+            boolean showingHints = Preferences
+                .getShowcaseShowed(ConversationsFragment.class.getName(), "fab");
             Showcase.disableAllHints();
+            if (!showingHints) {
+                // show off the dark theme!
+                Preferences.setShowcaseShowed(ConversationsFragment.class.getName(), "dark_theme", false);
+            }
         }
     }
 
+    @Nullable
+    public MyAccount getDefaultAccount() {
+        if (mDefaultAccount == null) {
+            mDefaultAccount = Authenticator.getDefaultAccount(this);
+        }
+        return mDefaultAccount;
+    }
+
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {
-        if (mDefaultKey == null)
-            mDefaultKey = Authenticator.loadDefaultPersonalKey(this, getCachedPassphrase());
-        return mDefaultKey;
+        MyAccount account = getDefaultAccount();
+        return account != null ? account.getPersonalKey() : null;
+    }
+
+    /**
+     * Returns a random server from the cached list or the user-defined server.
+     * @deprecated Server should only be retrieved from account user data
+     */
+    @Deprecated
+    public EndpointServer getEndpointServer() {
+        String customUri = Preferences.getServerURI();
+        if (!TextUtils.isEmpty(customUri)) {
+            try {
+                return new EndpointServer(customUri);
+            }
+            catch (Exception e) {
+                // custom is not valid - take one from list
+            }
+        }
+
+        // return server stored in the default account
+        MyAccount account = getDefaultAccount();
+        return account != null ? account.getServer() : null;
     }
 
     public void exportPersonalKey(OutputStream out, String exportPassphrase)
             throws CertificateException, PGPException, IOException,
                 KeyStoreException, NoSuchAlgorithmException {
 
-        Authenticator.exportDefaultPersonalKey(this, out, getCachedPassphrase(), exportPassphrase, true);
+        Authenticator.exportDefaultPersonalKey(this, out, exportPassphrase, true);
     }
 
     /** Invalidates the cached personal key. */
     public void invalidatePersonalKey() {
-        mDefaultKey = null;
-        mKeyPassphrase = null;
-    }
-
-    private void ensureCachedPassphrase() {
-        if (mKeyPassphrase == null) {
-            AccountManager am = AccountManager.get(this);
-            Account account = Authenticator.getDefaultAccount(am);
-            // cache passphrase from account
-            mKeyPassphrase = am.getPassword(account);
-        }
-    }
-
-    public String getCachedPassphrase()  {
-        ensureCachedPassphrase();
-        return mKeyPassphrase;
+        mDefaultAccount = null;
     }
 
     private void initMessagesController() {

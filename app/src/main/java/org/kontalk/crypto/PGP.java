@@ -78,6 +78,8 @@ import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.os.Parcel;
 
+import org.kontalk.reporting.ReportingManager;
+
 
 /** Some PGP utility method, mainly for use by {@link PersonalKey}. */
 public class PGP {
@@ -181,23 +183,39 @@ public class PGP {
     public static PGPDecryptedKeyPairRing create(Date timestamp)
             throws NoSuchAlgorithmException, PGPException, InvalidAlgorithmParameterException {
 
-        KeyPairGenerator gen;
         PGPKeyPair authKp, encryptKp, signKp;
 
-        gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
-        gen.initialize(RSA_KEY_LENGTH);
+        KeyPairGenerator authGen = KeyPairGenerator.getInstance("RSA", PROVIDER);
+        authGen.initialize(RSA_KEY_LENGTH);
 
-        authKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), timestamp);
+        authKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, authGen.generateKeyPair(), timestamp);
 
-        gen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
-        gen.initialize(new ECGenParameterSpec(EC_CURVE));
+        KeyPairGenerator encryptGen;
+        try {
+            encryptGen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
+            encryptGen.initialize(new ECGenParameterSpec(EC_CURVE));
+        }
+        catch (Throwable e) {
+            ReportingManager.logException(e);
+            encryptGen = KeyPairGenerator.getInstance("RSA", PROVIDER);
+            encryptGen.initialize(RSA_KEY_LENGTH);
+        }
 
-        encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), timestamp);
+        encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, encryptGen.generateKeyPair(), timestamp);
 
-        gen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
-        gen.initialize(new ECGenParameterSpec(EC_CURVE));
+        KeyPairGenerator signGen;
 
-        signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), timestamp);
+        try {
+            signGen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
+            signGen.initialize(new ECGenParameterSpec(EC_CURVE));
+        }
+        catch (Throwable e) {
+            ReportingManager.logException(e);
+            signGen = KeyPairGenerator.getInstance("RSA", PROVIDER);
+            signGen.initialize(RSA_KEY_LENGTH);
+        }
+
+        signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, signGen.generateKeyPair(), timestamp);
 
         return new PGPDecryptedKeyPairRing(authKp, signKp, encryptKp);
     }

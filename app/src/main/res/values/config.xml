@@ -35,6 +35,7 @@
     <bool name="pref_default_server_messages">true</bool>
 
     <!-- appearance settings defaults -->
+    <string name="pref_default_ui_theme" translatable="false">default</string>
     <string name="pref_default_font_size" translatable="false">medium</string>
     <string name="pref_default_balloons" translatable="false">hangout</string>
     <string name="pref_default_balloons_groups" translatable="false">hangout</string>

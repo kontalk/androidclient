@@ -42,6 +42,7 @@ import org.kontalk.position.PositionManager;
 import org.kontalk.position.RequestDetails;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.util.CombinedDrawable;
+import org.kontalk.util.ViewUtils;
 
 /**
  * Message component for {@link LocationComponent}.
@@ -138,6 +139,14 @@ public class LocationContentView extends RelativeLayout
         return 3;
     }
 
+    @Override
+    public void onApplyTheme(MessageListItemTheme theme) {
+        if (mPlaceholder.getVisibility() == VISIBLE) {
+            ViewUtils.setMessageBodyTextStyle(mPlaceholder, true);
+            mPlaceholder.setTextColor(theme.getTextColor());
+        }
+    }
+
     private void clear() {
         mComponent = null;
         mContent.setImageBitmap(null);
@@ -152,7 +161,7 @@ public class LocationContentView extends RelativeLayout
         ShapeDrawable defaultDrawable = new ShapeDrawable(new RoundRectShape(new float[]{rad, rad, rad, rad, rad, rad, rad, rad}, null, null));
         defaultDrawable.getPaint().setColor(ContextCompat.getColor(getContext(), R.color.map_placeholder_background));
         Drawable drawable = getContext().getResources().getDrawable(iconRes).mutate();
-        DrawableCompat.setTint(drawable, ContextCompat.getColor(getContext(), R.color.app_primary));
+        DrawableCompat.setTint(drawable, ContextCompat.getColor(getContext(), R.color.position_send_color));
 
         return new CombinedDrawable(defaultDrawable, drawable);
     }

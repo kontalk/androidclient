@@ -40,6 +40,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.preference.Preference;
 
 import android.text.InputType;
@@ -49,9 +51,12 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
+import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.reporting.ReportingManager;
+import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.PrivateKeyUploadedEvent;
@@ -74,10 +79,12 @@ public class AccountFragment extends RootPreferenceFragment {
     private static final int REQUEST_CREATE_KEYPACK = Activity.RESULT_FIRST_USER + 3;
 
     // this is used after when exiting to SAF for exporting
-    String mPassphrase;
+    private String mPassphrase;
 
     // created on demand
-    MaterialDialog mUploadPrivateKeyProgress;
+    private MaterialDialog mUploadPrivateKeyProgress;
+
+    private ServerListUpdater mServerlistUpdater;
 
     private EventBus mServiceBus = MessageCenterService.bus();
 
@@ -91,8 +98,9 @@ public class AccountFragment extends RootPreferenceFragment {
         addPreferencesFromResource(R.xml.preferences_account);
 
         // load account information
-        String displayName = Authenticator.getDefaultDisplayName(getContext());
-        String phoneNumber = Authenticator.getDefaultAccountName(getContext());
+        MyAccount account = Kontalk.get().getDefaultAccount();
+        String displayName = account.getDisplayName();
+        String phoneNumber = account.getPhoneNumber();
         final Preference accountInfo = findPreference("pref_account_info");
         accountInfo.setTitle(displayName);
         accountInfo.setSummary(RegistrationService.formatForDisplay(phoneNumber));
@@ -196,7 +204,7 @@ public class AccountFragment extends RootPreferenceFragment {
                         }
 
                         // also used as a fallback if SAF is not working properly
-                        PreferencesActivity ctx = (PreferencesActivity) getActivity();
+                        Context ctx = getContext();
                         if (ctx != null) {
                             new FolderChooserDialog.Builder(ctx)
                                     .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
@@ -227,6 +235,104 @@ public class AccountFragment extends RootPreferenceFragment {
                 return true;
             }
         });
+
+        // server list last update timestamp
+        final Preference updateServerList = findPreference("pref_update_server_list");
+        updateServerList.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Context ctx = getActivity();
+                mServerlistUpdater = new ServerListUpdater(ctx);
+
+                final DialogHelperFragment diag = DialogHelperFragment
+                    .newInstance(DialogHelperFragment.DIALOG_SERVERLIST_UPDATER);
+                final Context appCtx = getContext().getApplicationContext();
+
+                mServerlistUpdater.setListener(new ServerListUpdater.UpdaterListener() {
+                    @Override
+                    public void error(Throwable t) {
+                        try {
+                            ReportingManager.logException(t);
+                            message(R.string.serverlist_update_error);
+                            diag.dismiss();
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
+                    }
+
+                    @Override
+                    public void networkNotAvailable() {
+                        try {
+                            message(R.string.serverlist_update_nonetwork);
+                            diag.dismiss();
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
+                    }
+
+                    @Override
+                    public void offlineModeEnabled() {
+                        try {
+                            message(R.string.serverlist_update_offline);
+                            diag.dismiss();
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
+                    }
+
+                    @Override
+                    public void noData() {
+                        try {
+                            message(R.string.serverlist_update_nodata);
+                            diag.dismiss();
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
+                    }
+
+                    @Override
+                    public void updated(final ServerList list) {
+                        Preferences.updateServerListLastUpdate(updateServerList, list);
+                        // restart message center
+                        MessageCenterService.restart(appCtx);
+                        try {
+                            diag.dismiss();
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
+                    }
+
+                    private void message(final int textId) {
+                        try {
+                            diag.getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getActivity(), textId,
+                                        Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
+                    }
+                });
+
+                diag.show(getParentFragmentManager(), DialogHelperFragment.class.getSimpleName());
+                mServerlistUpdater.start();
+                return true;
+            }
+        });
+
+        // update 'last update' string
+        ServerList list = ServerListUpdater.getCurrentList(getActivity());
+        if (list != null)
+            Preferences.updateServerListLastUpdate(updateServerList, list);
 
         // delete account
         // TODO should be a custom class and a big red glowing text :)
@@ -276,7 +382,7 @@ public class AccountFragment extends RootPreferenceFragment {
     public void onResume() {
         super.onResume();
 
-        ((PreferencesActivity) getActivity()).getSupportActionBar()
+        ((BasePreferencesActivity) getActivity()).getSupportActionBar()
                 .setTitle(R.string.pref_account_settings);
     }
 
@@ -307,7 +413,7 @@ public class AccountFragment extends RootPreferenceFragment {
                         // user-entered passphrase is hashed, so compare with SHA-1 version
                         String hashed = SHA1.hex(passphrase);
                         if (hashed.equals(Kontalk.get()
-                                .getCachedPassphrase())) {
+                                .getDefaultAccount().getPassphrase())) {
                             action.onValidPassphrase(passphrase);
                         }
                         else {
@@ -331,7 +437,7 @@ public class AccountFragment extends RootPreferenceFragment {
                 .positiveText(android.R.string.ok, new PasswordInputDialog.OnPasswordInputListener() {
                     public void onClick(DialogInterface dialog, int which, String password) {
                         Context ctx = getActivity();
-                        String oldPassword = Kontalk.get().getCachedPassphrase();
+                        String oldPassword = Kontalk.get().getDefaultAccount().getPassphrase();
                         try {
 
                             // user-entered passphrase must be hashed
@@ -491,6 +597,66 @@ public class AccountFragment extends RootPreferenceFragment {
         }
         else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    void cancelServerlistUpdater() {
+        if (mServerlistUpdater != null) {
+            mServerlistUpdater.cancel();
+            mServerlistUpdater = null;
+        }
+    }
+
+    public static final class DialogHelperFragment extends DialogFragment {
+        public static final int DIALOG_SERVERLIST_UPDATER = 1;
+
+        public static DialogHelperFragment newInstance(int dialogId) {
+            DialogHelperFragment f = new DialogHelperFragment();
+            Bundle args = new Bundle();
+            args.putInt("id", dialogId);
+            f.setArguments(args);
+            return f;
+        }
+
+        public DialogHelperFragment() {
+        }
+
+        @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
+
+        @Override
+        public void onDestroyView() {
+            if (getDialog() != null && getRetainInstance())
+                getDialog().setOnDismissListener(null);
+            super.onDestroyView();
+        }
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            Bundle args = getArguments();
+            int id = args.getInt("id");
+
+            switch (id) {
+                case DIALOG_SERVERLIST_UPDATER:
+                    return new MaterialDialog.Builder(getContext())
+                        .cancelable(true)
+                        .content(R.string.serverlist_updating)
+                        .progress(true, 0)
+                        .cancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialog) {
+                                ((AccountFragment) getTargetFragment())
+                                    .cancelServerlistUpdater();
+                            }
+                        })
+                        .build();
+            }
+
+            return super.onCreateDialog(savedInstanceState);
         }
     }
 

@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.vanniktech.emoji.EmojiManager;
+import com.vanniktech.emoji.ios.IosEmojiProvider;
+
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -40,6 +43,7 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 
@@ -49,7 +53,6 @@ import android.view.WindowManager;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.service.ServerListUpdater;
@@ -78,6 +81,39 @@ public final class Preferences {
                 sPreferences.edit().putString("pref_balloons", newTheme)
                     .commit();
         }
+    }
+
+    public static void initUI(@NonNull Context context) {
+        applyTheme(context);
+
+        // init emoji manager
+        // FIXME this is taking a very long time
+        EmojiManager.install(new IosEmojiProvider());
+    }
+
+    public static void applyTheme(@NonNull Context context) {
+        // setup theme
+        // https://medium.com/androiddevelopers/appcompat-v23-2-daynight-d10f90c83e94
+        String uiTheme = getString("pref_ui_theme", context
+            .getResources().getString(R.string.pref_default_ui_theme));
+
+        int nightMode;
+        switch (uiTheme) {
+            case "light":
+                nightMode = AppCompatDelegate.MODE_NIGHT_NO;
+                break;
+            case "dark":
+                nightMode = AppCompatDelegate.MODE_NIGHT_YES;
+                break;
+            case "default":
+            default:
+                nightMode = SystemUtils.supportsNativeNightMode() ?
+                    AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM :
+                    AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY;
+                break;
+        }
+
+        AppCompatDelegate.setDefaultNightMode(nightMode);
     }
 
     public static SharedPreferences getInstance() {
@@ -176,22 +212,6 @@ public final class Preferences {
         return sPreferences.edit()
             .putString("pref_network_uri", serverURI)
             .commit();
-    }
-
-    /** Returns a random server from the cached list or the user-defined server. */
-    public static EndpointServer getEndpointServer(Context context) {
-        String customUri = getServerURI();
-        if (!TextUtils.isEmpty(customUri)) {
-            try {
-                return new EndpointServer(customUri);
-            }
-            catch (Exception e) {
-                // custom is not valid - take one from list
-            }
-        }
-
-        // return server stored in the default account
-        return Authenticator.getDefaultServer(context);
     }
 
     /** Returns a server provider reflecting the current settings. */
@@ -376,7 +396,7 @@ public final class Preferences {
                 throw new IOException(e);
             }
             finally {
-                SystemUtils.close(in);
+                DataUtils.close(in);
             }
 
             Bitmap bitmap;
@@ -389,7 +409,7 @@ public final class Preferences {
                 throw new IOException(e);
             }
             finally {
-                SystemUtils.close(in);
+                DataUtils.close(in);
             }
 
             Bitmap tn = ThumbnailUtils.extractThumbnail(bitmap, width, height);
@@ -406,7 +426,7 @@ public final class Preferences {
             return outFile;
         }
         finally {
-            SystemUtils.close(out);
+            DataUtils.close(out);
         }
     }
 
@@ -429,7 +449,7 @@ public final class Preferences {
             // ignored
         }
         finally {
-            SystemUtils.close(in);
+            DataUtils.close(in);
         }
         return null;
     }

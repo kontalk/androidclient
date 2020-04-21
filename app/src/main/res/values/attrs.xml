@@ -63,4 +63,19 @@
         <attr name="dividerView" format="reference" />
     </declare-styleable>
 
+    <!-- text color for day/night chat balloon themes -->
+    <attr name="chatThemeDayNightMessageTextColor" format="reference"/>
+    <attr name="chatThemeDayNightDateTextColor" format="reference"/>
+
+    <!-- text color for day only (light) chat balloon themes -->
+    <attr name="chatThemeDayOnlyMessageTextColor" format="reference"/>
+    <attr name="chatThemeDayOnlyDateTextColor" format="reference"/>
+
+    <!-- text color for night only (dark) chat balloon themes -->
+    <attr name="chatThemeNightOnlyMessageTextColor" format="reference"/>
+    <attr name="chatThemeNightOnlyDateTextColor" format="reference"/>
+
+    <!--block quote vertical line color -->
+    <attr name="chatQuoteLineColor" format="reference"/>
+
 </resources>

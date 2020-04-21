@@ -25,11 +25,10 @@ import java.security.cert.CertificateException;
 
 import org.jivesoftware.smack.packet.Stanza;
 import org.kontalk.Kontalk;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.util.XMPPUtils;
 import org.bouncycastle.openpgp.PGPException;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -38,7 +37,6 @@ import android.widget.Toast;
 
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
@@ -54,7 +52,7 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
     public RegenerateKeyPairListener(MessageCenterService instance, String passphrase) {
         super(instance, passphrase);
         if (passphrase == null)
-            mPassphrase = Kontalk.get().getCachedPassphrase();
+            mPassphrase = Kontalk.get().getDefaultAccount().getPassphrase();
     }
 
     public void run() throws CertificateException, SignatureException,
@@ -100,14 +98,12 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
 
                     // store the key
                     try {
-                        Context context = getContext();
-                        AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
-                        Account acc = Authenticator.getDefaultAccount(am);
+                        MyAccount account = Kontalk.get().getDefaultAccount();
 
-                        String userId = XMPPUtils.createLocalpart(acc.name);
+                        String userId = XMPPUtils.createLocalpart(account.getName());
                         mKeyRing = key.storeNetwork(userId, getServer().getNetwork(),
                             // TODO should we ask passphrase to the user?
-                            Kontalk.get().getCachedPassphrase());
+                            account.getPassphrase());
 
                         // listen for connection events
                         registerConnectionEvents();

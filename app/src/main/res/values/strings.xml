@@ -39,6 +39,7 @@
     <string name="menu_import_device">Register from another device</string>
     <string name="menu_manual_verification">Already have a code?</string>
     <string name="pref_account_settings">Account</string>
+    <string name="pref_account_settings_system">Manage account</string>
     <string name="pref_network_settings">Network</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
@@ -234,6 +235,7 @@
     <string name="yes_user_not_found">Contact user anyway</string>
     <string name="no_user_not_found">Send invite</string>
     <string name="pref_appearance_settings">Appearance</string>
+    <string name="pref_ui_theme">Theme</string>
     <string name="pref_font_size">Font size</string>
     <string name="menu_status">Status</string>
     <string name="menu_attachment">Attach</string>
@@ -280,6 +282,9 @@
     <string name="pref_vibrate_label_always">Always</string>
     <string name="pref_vibrate_label_silent">Only when silent</string>
     <string name="pref_vibrate_label_never">Never</string>
+    <string name="pref_uitheme_label_default">Set by Battery Saver</string>
+    <string name="pref_uitheme_label_light">Light</string>
+    <string name="pref_uitheme_label_dark">Dark</string>
     <string name="pref_fontsize_label_small">Small</string>
     <string name="pref_fontsize_label_medium">Medium</string>
     <string name="pref_fontsize_label_large">Large</string>
@@ -371,6 +376,9 @@
     <string name="chooser_error_no_dialer">No dialer app available to call or no telephony available on this device.</string>
     <string name="chooser_error_no_browser">No browser available to open link.</string>
     <string name="chooser_select_link">Choose action</string>
+
+    <string name="chooser_error_no_share_app">No suitable app available to share the file.</string>
+    <string name="chooser_error_share_denied">Access to the original file was denied.</string>
 
     <string name="status_activity_title">Status message</string>
     <string name="hint_status_entry">Type your status message here</string>
@@ -505,6 +513,7 @@
     <string name="err_passwords_mismatch">Passwords do not match!</string>
     <string name="err_password_invalid">Wrong password.</string>
 
+    <string name="ptt_button">Record</string>
     <string name="hint_record">Tap the mic to begin recording.</string>
     <string name="hint_ptt">Tap and hold the mic to record.</string>
     <string name="err_change_passphrase">Unable to change the personal key password.</string>
@@ -680,6 +689,7 @@
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
 
+    <string name="warn_external_contacts_denied">You denied access to contacts. You must open the chat you want manually.</string>
     <string name="err_validation_contacts_denied">Kontalk needs access to contacts in order to function properly. How can it know the people you can chat with??\nYou may cancel now, but you will be asked again once you\'ve registered.</string>
     <string name="err_contacts_denied">Kontalk needs access to contacts in order to function properly. How can it know the people you can chat with??\nYou can allow access to contacts from Android settings.</string>
     <string name="warn_contacts_denied">You denied access to contacts. You won\'t be able to see changes in contacts here.</string>
@@ -739,8 +749,10 @@
 
     <string name="showcase_conversations_compose_title">Start chatting</string>
     <string name="showcase_conversations_compose_message">Use this button to open a chat with someone.</string>
+    <string name="showcase_conversations_dark_mode_title">Dark mode</string>
+    <string name="showcase_conversations_dark_mode_message">You can enable the dark theme in Settings &gt; Appearance.</string>
     <string name="showcase_composer_attach_title">Not only text</string>
-    <string name="showcase_composer_attach_message">You can share other pictures, recordings and more.</string>
+    <string name="showcase_composer_attach_message">You can share pictures, recordings and more.</string>
     <string name="showcase_composer_toolbar_single_title">Contact info</string>
     <string name="showcase_composer_toolbar_single_message">Tap the toolbar to view contact information.</string>
     <string name="showcase_composer_toolbar_group_title">Group info</string>

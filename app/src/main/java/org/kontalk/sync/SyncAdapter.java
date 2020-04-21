@@ -33,8 +33,9 @@ import android.os.SystemClock;
 import android.provider.ContactsContract;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import org.kontalk.Kontalk;
 import org.kontalk.Log;
-import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
@@ -86,9 +87,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
             }
 
-            // do not start if no server available (limbo state)
-            if (Preferences.getEndpointServer(mContext) == null) {
-                Log.d(TAG, "no server available - aborting");
+            // do not start if no account available
+            if (Kontalk.get().getDefaultAccount() == null) {
+                Log.d(TAG, "no account available - aborting");
                 return;
             }
 
@@ -161,13 +162,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             return false;
         }
 
-        Account acc = Authenticator.getDefaultAccount(context);
+        MyAccount account = Kontalk.get().getDefaultAccount();
+        if (account == null) {
+            Log.d(TAG, "no account found");
+            return false;
+        }
+
         Bundle extra = new Bundle();
         // override auto-sync and background data settings
         extra.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         // put our sync ahead of other sync operations :)
         extra.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        ContentResolver.requestSync(acc, ContactsContract.AUTHORITY, extra);
+        ContentResolver.requestSync(account.getSystemAccount(), ContactsContract.AUTHORITY, extra);
         return true;
     }
 
@@ -178,13 +184,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     public static boolean isPending(Context context) {
-        Account acc = Authenticator.getDefaultAccount(context);
-        return ContentResolver.isSyncPending(acc, ContactsContract.AUTHORITY);
+        MyAccount account = Kontalk.get().getDefaultAccount();
+        return account != null && ContentResolver.isSyncPending(account.getSystemAccount(), ContactsContract.AUTHORITY);
     }
 
     public static boolean isActive(Context context) {
-        Account acc = Authenticator.getDefaultAccount(context);
-        return acc != null && ContentResolver.isSyncActive(acc, ContactsContract.AUTHORITY);
+        MyAccount account = Kontalk.get().getDefaultAccount();
+        return account != null && ContentResolver.isSyncActive(account.getSystemAccount(), ContactsContract.AUTHORITY);
     }
 
     public static boolean isError(SyncResult syncResult) {

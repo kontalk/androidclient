@@ -65,7 +65,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
@@ -101,6 +101,7 @@ import org.kontalk.service.msgcenter.event.UserUnblockedEvent;
 import org.kontalk.service.msgcenter.event.VersionEvent;
 import org.kontalk.service.msgcenter.event.VersionRequest;
 import org.kontalk.sync.Syncer;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
@@ -287,7 +288,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (context == null)
             return contact.getDisplayName();
 
-        EndpointServer server = Preferences.getEndpointServer(context);
+        EndpointServer server = Kontalk.get().getEndpointServer();
         if (contact.getJID().equalsIgnoreCase(server.getNetwork())) {
             return context.getString(R.string.contact_name_server);
         }
@@ -321,33 +322,46 @@ public class ComposeMessageFragment extends AbstractComposeFragment
          * FIXME this will retrieve name directly from contacts,
          * resulting in a possible discrepancy with users database
          */
-        Cursor c = cres.query(uri, new String[] {
-            Syncer.DATA_COLUMN_DISPLAY_NAME,
-            Syncer.DATA_COLUMN_PHONE }, null, null, null);
-        if (c.moveToFirst()) {
-            mUserName = c.getString(0);
-            mUserPhone = c.getString(1);
+        Cursor c = null;
+        try {
+            c = cres.query(uri, new String[]{
+                Syncer.DATA_COLUMN_DISPLAY_NAME,
+                Syncer.DATA_COLUMN_PHONE}, null, null, null);
+            if (c != null && c.moveToFirst()) {
+                mUserName = c.getString(0);
+                mUserPhone = c.getString(1);
 
-            // FIXME should it be retrieved from RawContacts.SYNC3 ??
-            mUserJID = XMPPUtils.createLocalJID(getContext(),
-                XMPPUtils.createLocalpart(mUserPhone));
+                // FIXME should it be retrieved from RawContacts.SYNC3 ??
+                MyAccount account = Kontalk.get().getDefaultAccount();
+                mUserJID = account.createLocalJID(XMPPUtils
+                    .createLocalpart(mUserPhone));
 
-            threadId = MessagesProviderClient.findThread(getContext(), mUserJID);
+                threadId = MessagesProviderClient.findThread(getContext(), mUserJID);
+            }
         }
-        c.close();
+        catch (SecurityException e) {
+            // user denied access to contacts. Sorry!
+            Toast.makeText(getContext(), R.string.warn_external_contacts_denied,
+                Toast.LENGTH_LONG).show();
+            closeConversation();
+            return;
+        }
+        finally {
+            DataUtils.close(c);
+        }
 
         if (threadId > 0) {
-            mConversation = Conversation.loadFromId(getActivity(),
+            mConversation = Conversation.loadFromId(getContext(),
                 threadId);
             setThreadId(threadId);
         }
         else if (mUserJID == null) {
-            Toast.makeText(getActivity(), R.string.err_no_contact,
+            Toast.makeText(getContext(), R.string.err_no_contact,
                 Toast.LENGTH_LONG).show();
             closeConversation();
         }
         else {
-            mConversation = Conversation.createNew(getActivity());
+            mConversation = Conversation.createNew(getContext());
             mConversation.setRecipient(mUserJID);
         }
     }
@@ -819,7 +833,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
     @Override
     protected void addUsers(String[] members) {
-        String selfJid = Authenticator.getSelfJID(getContext());
+        String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
         String groupId = StringUtils.randomString(20);
         String groupJid = KontalkGroupCommands.createGroupJid(groupId, selfJid);
 
@@ -1192,7 +1206,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (mBlockMenu != null) {
             Context context = getContext();
             if (context != null) {
-                if (Authenticator.isSelfJID(context, mUserJID)) {
+                if (Kontalk.get().getDefaultAccount().isSelfJID(mUserJID)) {
                     mBlockMenu.setVisible(false).setEnabled(false);
                     mUnblockMenu.setVisible(false).setEnabled(false);
                 }

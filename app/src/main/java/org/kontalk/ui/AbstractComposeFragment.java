@@ -91,7 +91,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -104,7 +104,7 @@ import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
-import org.kontalk.position.Position;
+import org.kontalk.ui.position.model.Position;
 import org.kontalk.position.PositionManager;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages.Messages;
@@ -130,6 +130,7 @@ import org.kontalk.ui.view.ComposerListener;
 import org.kontalk.ui.view.MessageListItem;
 import org.kontalk.ui.view.ReplyBar;
 import org.kontalk.util.AudioRecording;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
@@ -520,7 +521,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         switch (item.getItemId()) {
             case R.id.menu_delete: {
                 // using clone because listview returns its original copy
-                deleteSelectedMessages(SystemUtils
+                deleteSelectedMessages(DataUtils
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 mode.finish();
                 return true;
@@ -629,7 +630,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     private void copySelectedMessages(final SparseBooleanArray checked) {
         String prevUserId = null;
-        String selfJid = Authenticator.getSelfJID(getContext());
+        String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
         StringBuilder massText = new StringBuilder();
 
         for (int i = 0, c = getListView().getCount()+getListView().getHeaderViewsCount(); i < c; ++i) {
@@ -637,7 +638,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 Cursor cursor = (Cursor) getListView().getItemAtPosition(i);
                 CompositeMessage msg = CompositeMessage.fromCursor(getContext(), cursor);
                 String userId = msg.getDirection() == Messages.DIRECTION_IN ?
-                    msg.getSender() : Authenticator.getSelfJID(getContext());
+                    msg.getSender() : Kontalk.get().getDefaultAccount().getSelfJID();
 
                 if (prevUserId == null || !prevUserId.equalsIgnoreCase(userId)) {
                     String displayName;
@@ -646,7 +647,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                         displayName = contact.getDisplayName();
                     }
                     else {
-                        displayName = Authenticator.getDefaultDisplayName(getContext());
+                        displayName = Kontalk.get().getDefaultAccount().getDisplayName();
                     }
 
                     if (massText.length() > 0)
@@ -694,7 +695,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     Context ctx = dialog.getContext();
                     for (CompositeMessage.DeleteMessageHolder item : list) {
-                        CompositeMessage.deleteFromCursor(ctx, item);
+                        CompositeMessage.deleteMessage(ctx, item);
                     }
                     mListAdapter.notifyDataSetChanged();
                 }
@@ -1131,7 +1132,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         else if (location != null) {
             String userId = item.getMessage().getSender();
             if (item.getMessage().getSender() == null)
-                userId = Authenticator.getSelfJID(getContext());
+                userId = Kontalk.get().getDefaultAccount().getSelfJID();
 
             Intent intent = new Intent(getActivity(), PositionActivity.class);
             Position p = new Position(location.getLatitude(), location.getLongitude(),
@@ -1495,16 +1496,20 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         TextComponent textComponent = msg.getComponent(TextComponent.class);
         if (textComponent != null) {
             String displayName;
+            String jid;
             if (msg.getDirection() == Messages.DIRECTION_IN) {
                 String sender = msg.getSender();
                 Contact contact = Contact.findByUserId(getContext(), sender);
                 displayName = contact.getDisplayName();
+                jid = contact.getJID();
             }
             else {
-                displayName = Authenticator.getDefaultDisplayName(getContext());
+                MyAccount myAccount = Kontalk.get().getDefaultAccount();
+                displayName = myAccount.getDisplayName();
+                jid = myAccount.getSelfJID();
             }
 
-            mReplyBar.show(msg.getDatabaseId(), displayName, textComponent.getContent());
+            mReplyBar.show(msg.getDatabaseId(), jid, displayName, textComponent.getContent());
         }
     }
 
@@ -1585,11 +1590,21 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         }
 
         if (i != null) {
-            startActivity(i);
+            try {
+                startActivity(i);
+            }
+            catch (ActivityNotFoundException e) {
+                Toast.makeText(getContext(), R.string.chooser_error_no_share_app,
+                    Toast.LENGTH_LONG).show();
+            }
+            catch (SecurityException e) {
+                Toast.makeText(getContext(), R.string.chooser_error_share_denied,
+                    Toast.LENGTH_LONG).show();
+            }
         }
         else {
             // TODO ehm...
-            Log.w(TAG, "error sharing message");
+            Log.w(TAG, "unshareable message type");
         }
     }
 
@@ -2213,7 +2228,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     public void onResume() {
         super.onResume();
 
-        if (Authenticator.getDefaultAccount(getActivity()) == null) {
+        if (Kontalk.get().getDefaultAccount() == null) {
             NumberValidation.start(getActivity());
             getActivity().finish();
             return;

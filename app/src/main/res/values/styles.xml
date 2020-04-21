@@ -64,7 +64,7 @@
 
     <style name="DateHeader">
         <item name="android:textSize">12sp</item>
-        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+        <item name="android:textColor">@android:color/white</item>
         <item name="android:background">@drawable/date_stamp</item>
     </style>
 
@@ -137,6 +137,10 @@
     <style name="TransparentToolbar" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="android:windowActionBarOverlay">true</item>
         <item name="windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="SeekBar.Audio" parent="Widget.AppCompat.SeekBar">
+        <!-- sorry < API 21 people, no tinting for you -->
     </style>
 
 </resources>

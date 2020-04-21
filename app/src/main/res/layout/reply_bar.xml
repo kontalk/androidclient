@@ -31,7 +31,7 @@
         android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
         android:src="@drawable/ic_menu_reply"
-        android:tint="?attr/colorPrimaryDark"
+        android:tint="?attr/chatQuoteLineColor"
         tools:ignore="ContentDescription" />
 
     <TextView android:id="@+id/sender"
@@ -65,7 +65,7 @@
 
     <ImageView android:id="@+id/btn_cancel"
         android:contentDescription="@string/btn_reply_cancel_description"
-        android:src="@drawable/ic_close_light"
+        android:src="@drawable/ic_close"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

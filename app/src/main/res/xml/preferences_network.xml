@@ -18,9 +18,6 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <Preference android:key="pref_update_server_list"
-        android:title="@string/pref_update_server_list"
-        />
     <EditTextPreference
         android:key="pref_network_uri"
         android:dialogTitle="@string/pref_network_uri"

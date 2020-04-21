@@ -1010,7 +1010,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         // send back result
         final Intent intent = new Intent();
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, event.account.name);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, event.account.getName());
         intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE);
 
         setAccountAuthenticatorResult(intent.getExtras());
@@ -1031,8 +1031,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                     startProgress(getString(R.string.msg_importing_key));
 
-                    register(new ImportKeyRequest(Preferences
-                        .getEndpointServer(NumberValidation.this),
+                    register(new ImportKeyRequest(Kontalk.get().getEndpointServer(),
                         zip, input.toString(), true, getBrandImageSize()));
                 }
             })
@@ -1236,7 +1235,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         Log.v(TAG, "finishing login");
         statusInitializing();
 
-        onAccountCreated(new AccountCreatedEvent(Authenticator.getDefaultAccount(this)));
+        onAccountCreated(new AccountCreatedEvent(Kontalk.get().getDefaultAccount()));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

@@ -30,7 +30,6 @@ import android.widget.TextView;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.util.ViewUtils;
 
 
@@ -68,7 +67,7 @@ public class RegisterDeviceActivity extends ToolbarActivity implements ViewUtils
     protected void onStart() {
         super.onStart();
 
-        String account = Authenticator.getDefaultAccountName(this);
+        String account = Kontalk.get().getDefaultAccount().getName();
         mAccountName.setText(account);
 
         String from = getIntent().getStringExtra("from");

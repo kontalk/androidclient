@@ -18,8 +18,8 @@
 
 package org.kontalk.message;
 
-
 import org.kontalk.crypto.Coder;
+
 
 /**
  * A location message component.

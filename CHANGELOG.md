@@ -2,15 +2,19 @@
 
 ## [Next]
 ### Changed
+- Dark theme (#41)
 - Sharing to groups (#864)
 - Migrate to AndroidX (#1269)
 - Support for Android 10 (#1282)
 - On-demand export of media to public storage (#1291)
 - Improved multiselection experience
 - Revamped settings appearance
+- Automatically accept invitations from local network users (#1294)
 - Removed Google Play donation
 - Add tutorial hints (#1014)
 - Improve audio recordings quality
+- Delete media on message delete (#668)
+- Moved the update server list function in account preferences
 
 ### Fixed
 - Fix crash on devices without a browser
@@ -22,6 +26,8 @@
 - Contact pictures in notification on Android 9+ (#1288)
 - Fix deadlock in faulty networks
 - Fix audio recordings permission problem on Android 10
+- Fix crash sharing a file we don't have permission for
+- Fix crash on some devices generating ECC keys
 
 ## [4.3.1] - 2019-08-24
 ### Fixed

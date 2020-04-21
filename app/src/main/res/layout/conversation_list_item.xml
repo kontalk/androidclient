@@ -77,7 +77,7 @@
         android:maxLines="1"
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/grayed_out" />
+        android:textColor="?android:attr/textColorSecondary" />
 
     <LinearLayout android:id="@+id/emblems"
 		android:orientation="horizontal"

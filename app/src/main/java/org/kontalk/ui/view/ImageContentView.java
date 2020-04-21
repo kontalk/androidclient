@@ -42,6 +42,7 @@ import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.util.MediaStorage;
+import org.kontalk.util.ViewUtils;
 
 
 /**
@@ -83,6 +84,14 @@ public class ImageContentView extends FrameLayout
         showBitmap(bitmap);
     }
 
+    @Override
+    public void onApplyTheme(MessageListItemTheme theme) {
+        if (mPlaceholder.getVisibility() == VISIBLE) {
+            ViewUtils.setMessageBodyTextStyle(mPlaceholder, true);
+            mPlaceholder.setTextColor(theme.getTextColor());
+        }
+    }
+
     /** This method might be called from a thread other than the main thread. */
     void showBitmap(Bitmap bitmap) {
         // this method might be called from another thread
@@ -98,7 +107,6 @@ public class ImageContentView extends FrameLayout
         else {
             String placeholder = CompositeMessage.getSampleTextContent(component.getContent().getMime());
             mPlaceholder.setText(placeholder);
-            TextContentView.setTextStyle(mPlaceholder, true);
             mContent.setVisibility(GONE);
             mPlaceholder.setVisibility(VISIBLE);
         }

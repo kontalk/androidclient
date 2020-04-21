@@ -50,7 +50,7 @@ import android.widget.Toast;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProviderClient;
@@ -61,8 +61,8 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.ui.prefs.HelpPreference;
 import org.kontalk.ui.prefs.PreferencesActivity;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -103,7 +103,7 @@ public class ConversationsActivity extends MainActivity
         mFragment = (ConversationsFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
 
-        if (Authenticator.getDefaultAccount(this) != null && !afterOnCreate())
+        if (Kontalk.get().getDefaultAccount() != null && !afterOnCreate())
             handleIntent(getIntent());
     }
 
@@ -127,19 +127,27 @@ public class ConversationsActivity extends MainActivity
                 Uri uri = null;
 
                 if (actionView) {
-                    Cursor c = getContentResolver().query(intent.getData(),
-                        new String[]{Syncer.DATA_COLUMN_PHONE},
-                        null, null, null);
+                    Cursor c = null;
                     try {
+                        c = getContentResolver().query(intent.getData(),
+                            new String[]{Syncer.DATA_COLUMN_PHONE},
+                            null, null, null);
                         if (c != null && c.moveToFirst()) {
                             String phone = c.getString(0);
-                            String userJID = XMPPUtils.createLocalJID(this,
-                                XMPPUtils.createLocalpart(phone));
+                            MyAccount account = Kontalk.get().getDefaultAccount();
+                            String userJID = account.createLocalJID(XMPPUtils
+                                .createLocalpart(phone));
                             uri = Threads.getUri(userJID);
                         }
                     }
+                    catch (SecurityException e) {
+                        // user denied access to contacts. Sorry!
+                        Toast.makeText(this, R.string.warn_external_contacts_denied,
+                            Toast.LENGTH_LONG).show();
+                        return true;
+                    }
                     finally {
-                        SystemUtils.close(c);
+                        DataUtils.close(c);
                     }
                 }
                 else {
@@ -211,7 +219,7 @@ public class ConversationsActivity extends MainActivity
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (Authenticator.getDefaultAccount(context) != null) {
+                if (Kontalk.get().getDefaultAccount() != null) {
                     // mark all messages as old
                     MessagesProviderClient.markAllThreadsAsOld(context);
                     // update notification
@@ -220,7 +228,7 @@ public class ConversationsActivity extends MainActivity
             }
         }).start();
 
-        if (Authenticator.getDefaultAccount(this) == null) {
+        if (Kontalk.get().getDefaultAccount() == null) {
             NumberValidation.start(this);
             finish();
         }
@@ -297,7 +305,7 @@ public class ConversationsActivity extends MainActivity
     }
 
     private void startGroupChat(List<Uri> users) {
-        String selfJid = Authenticator.getSelfJID(this);
+        String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
         String groupId = StringUtils.randomString(20);
         String groupJid = KontalkGroupCommands.createGroupJid(groupId, selfJid);
 

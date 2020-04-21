@@ -40,7 +40,7 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.GroupCommandAckListener;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.SystemUtils;
+import org.kontalk.util.DataUtils;
 
 
 public class KontalkGroupController implements GroupController<Message> {
@@ -95,7 +95,7 @@ public class KontalkGroupController implements GroupController<Message> {
             Set<Jid> filteredMembers = new HashSet<>();
             for (Jid member : members) {
                 // do not include added users in members list
-                if (added == null || !SystemUtils.contains(added, member)) {
+                if (added == null || !DataUtils.contains(added, member)) {
                     filteredMembers.add(member);
                 }
             }

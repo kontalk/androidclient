@@ -54,7 +54,6 @@ import android.widget.Toast;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
@@ -105,7 +104,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         Context context;
         if (mInviteGroupMenu != null && (context = getContext()) != null) {
             boolean visible;
-            String myUser = Authenticator.getSelfJID(context);
+            String myUser = Kontalk.get().getDefaultAccount().getSelfJID();
 
             // menu items requiring ownership and membership
             visible = KontalkGroupManager.KontalkGroup
@@ -173,7 +172,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         Collections.addAll(existingMembers, mConversation.getGroupPeers());
 
         // ensure no duplicates
-        String selfJid = Authenticator.getSelfJID(getContext());
+        String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
         Set<String> usersList = new HashSet<>();
         for (String member : members) {
             // exclude ourselves and do not add if already an existing member

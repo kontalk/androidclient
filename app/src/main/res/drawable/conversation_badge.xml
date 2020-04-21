@@ -21,7 +21,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:shape="rectangle">
-    <solid android:color="#079dd0"/>
+    <solid android:color="@color/badge_color"/>
     <corners android:bottomLeftRadius="4dip"
         android:bottomRightRadius="4dip"
         android:topLeftRadius="4dip"

@@ -57,9 +57,9 @@ import android.provider.ContactsContract.PhoneLookup;
 import androidx.annotation.NonNull;
 import androidx.collection.LruCache;
 
+import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderClient;
@@ -516,9 +516,9 @@ public class Contact {
         mSecurityFlags = securityFlags;
     }
 
-    public boolean isSelf(Context context) {
+    public boolean isSelf() {
         try {
-            return Authenticator.isSelfJID(context, JidCreate.bareFrom(mJID));
+            return Kontalk.get().getDefaultAccount().isSelfJID(JidCreate.bareFrom(mJID));
         }
         catch (XmppStringprepException e) {
             return false;

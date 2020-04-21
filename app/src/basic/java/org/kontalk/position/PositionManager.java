@@ -22,15 +22,14 @@ import android.content.Context;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.kontalk.ui.position.PositionOsmFragment;
+import org.kontalk.ui.position.SendPositionOsmFragment;
+
 
 /**
  * @author Andrea Cappelli
  */
 public class PositionManager {
-
-    public static Fragment getMapFragment(Context context) {
-        return new SendPositionOsmFragment();
-    }
 
     public static Fragment getSendPositionFragment(Context context) {
         return new SendPositionOsmFragment();

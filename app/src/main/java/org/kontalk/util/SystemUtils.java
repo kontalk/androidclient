@@ -18,11 +18,7 @@
 
 package org.kontalk.util;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -37,7 +33,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -56,7 +51,6 @@ import androidx.core.content.ContextCompat;
 import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
-import android.util.SparseBooleanArray;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Surface;
@@ -225,7 +219,7 @@ public final class SystemUtils {
                 return BitmapFactory.decodeStream(input);
             }
             finally {
-                SystemUtils.close(input);
+                DataUtils.close(input);
             }
         }
 
@@ -263,102 +257,6 @@ public final class SystemUtils {
         }
 
         return null;
-    }
-
-    /**
-     * Provides clone functionality for the {@link SparseBooleanArray}.
-     * See https://code.google.com/p/android/issues/detail?id=39242
-     */
-    public static SparseBooleanArray cloneSparseBooleanArray(SparseBooleanArray array) {
-        final SparseBooleanArray clone = new SparseBooleanArray();
-
-        synchronized (array) {
-            final int size = array.size();
-            for (int i = 0; i < size; i++) {
-                int key = array.keyAt(i);
-                clone.put(key, array.get(key));
-            }
-        }
-
-        return clone;
-    }
-
-    public static <T> T[] concatenate (T[] a, T[] b) {
-        int aLen = a.length;
-        int bLen = b.length;
-
-        @SuppressWarnings("unchecked")
-        T[] c = (T[]) Array.newInstance(a.getClass().getComponentType(), aLen+bLen);
-        System.arraycopy(a, 0, c, 0, aLen);
-        System.arraycopy(b, 0, c, aLen, bLen);
-
-        return c;
-    }
-
-    public static <T> T[] concatenate (T[] a, T b) {
-        int aLen = a.length;
-
-        @SuppressWarnings("unchecked")
-        T[] c = (T[]) Array.newInstance(a.getClass().getComponentType(), aLen + 1);
-        System.arraycopy(a, 0, c, 0, aLen);
-        c[aLen] = b;
-
-        return c;
-    }
-
-    public static <T> boolean contains(final T[] array, final T v) {
-        for (final T e : array)
-            if (e == v || v != null && v.equals(e))
-                return true;
-
-        return false;
-    }
-
-    /** Mainly for converting arrays of Jids to arrays of String :) */
-    public static <T> String[] toString(final T[] array) {
-        String[] out = new String[array.length];
-        for (int i = 0; i < array.length; i++) {
-            out[i] = array[i] != null ? array[i].toString() : null;
-        }
-        return out;
-    }
-
-    /** Instead of importing the whole commons-io :) */
-    public static long copy(final InputStream input, final OutputStream output) throws IOException {
-        byte[] buffer = new byte[4096];
-        long count = 0;
-        int n;
-        while (-1 != (n = input.read(buffer))) {
-            output.write(buffer, 0, n);
-            count += n;
-        }
-        return count;
-    }
-
-    /** Closes the given closeable object, ignoring any errors. */
-    public static void close(Closeable object) {
-        if (object != null) {
-            try {
-                object.close();
-            }
-            catch (Exception ignored) {
-            }
-        }
-    }
-
-    /**
-     * Closes the given stream, ignoring any errors.
-     * This method can be safely deleted once we'll have min SDK set to 19,
-     * because AssetFileDescriptor will implement Closeable.
-     */
-    public static void closeStream(AssetFileDescriptor stream) {
-        if (stream != null) {
-            try {
-                stream.close();
-            }
-            catch (Exception ignored) {
-            }
-        }
     }
 
     public static void openURL(Context context, String url) {
@@ -494,6 +392,16 @@ public final class SystemUtils {
 
     public static boolean supportsScopedStorage() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
+    }
+
+    public static boolean supportsNativeNightMode() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
+    }
+
+    public static boolean isLightTheme(Context context) {
+        TypedValue value = new TypedValue();
+        return context.getTheme().resolveAttribute(R.attr.isLightTheme, value, true)
+            && value.data != 0;
     }
 
 }

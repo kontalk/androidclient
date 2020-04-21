@@ -64,7 +64,6 @@ import android.widget.TextView;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager.KontalkGroup;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
@@ -77,6 +76,7 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.RosterStatusEvent;
 import org.kontalk.service.msgcenter.event.RosterStatusRequest;
 import org.kontalk.ui.view.ContactsListItem;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.SystemUtils;
 
 
@@ -128,7 +128,7 @@ public class GroupInfoFragment extends ListFragment
         mTitle.setText(TextUtils.isEmpty(subject) ?
             getString(R.string.group_untitled) : subject);
 
-        String selfJid = Authenticator.getSelfJID(getContext());
+        String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
         boolean isOwner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), selfJid);
         boolean isMember = mConversation.getGroupMembership() == Groups.MEMBERSHIP_MEMBER;
         mSetSubject.setEnabled(isOwner && isMember);
@@ -174,7 +174,7 @@ public class GroupInfoFragment extends ListFragment
     }
 
     private void updateUI() {
-        String selfJid = Authenticator.getSelfJID(getContext());
+        String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
         boolean isOwner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), selfJid);
         if (mRemoveMenu != null) {
             mRemoveMenu.setVisible(isOwner);
@@ -192,11 +192,11 @@ public class GroupInfoFragment extends ListFragment
         String[] added = MessagesProviderClient.getGroupMembers(getContext(),
             mConversation.getGroupJid(), Groups.MEMBER_PENDING_ADDED);
         if (added.length > 0)
-            members = SystemUtils.concatenate(members, added);
+            members = DataUtils.concatenate(members, added);
         // if we are in the group, add ourself to the list
         if (mConversation.getGroupMembership() == Groups.MEMBERSHIP_MEMBER) {
-            String selfJid = Authenticator.getSelfJID(getContext());
-            members = SystemUtils.concatenate(members, selfJid);
+            String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
+            members = DataUtils.concatenate(members, selfJid);
         }
         return members;
     }
@@ -330,13 +330,13 @@ public class GroupInfoFragment extends ListFragment
         switch (item.getItemId()) {
             case R.id.menu_remove:
                 // using clone because listview returns its original copy
-                removeSelectedUsers(SystemUtils
+                removeSelectedUsers(DataUtils
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 mode.finish();
                 return true;
             case R.id.menu_add_again:
                 // using clone because listview returns its original copy
-                readdUser(SystemUtils
+                readdUser(DataUtils
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 return true;
             case R.id.menu_chat:
@@ -390,7 +390,7 @@ public class GroupInfoFragment extends ListFragment
             if (checked.get(i)) {
                 GroupMembersAdapter.GroupMember member =
                     (GroupMembersAdapter.GroupMember) mMembersAdapter.getItem(i);
-                if (Authenticator.isSelfJID(getContext(), member.contact.getJID())) {
+                if (Kontalk.get().getDefaultAccount().isSelfJID(member.contact.getJID())) {
                     removingSelf = true;
                 }
                 else {
@@ -435,7 +435,7 @@ public class GroupInfoFragment extends ListFragment
         final String jid = c.getJID();
         final String dialogFingerprint;
         final String fingerprint;
-        final boolean selfJid = Authenticator.isSelfJID(getContext(), jid);
+        final boolean selfJid = Kontalk.get().getDefaultAccount().isSelfJID(jid);
         int titleResId = R.string.title_identity;
         String uid;
 
@@ -455,7 +455,7 @@ public class GroupInfoFragment extends ListFragment
             dialogFingerprint = null;
         }
 
-        if (Authenticator.isSelfJID(getContext(), jid)) {
+        if (Kontalk.get().getDefaultAccount().isSelfJID(jid)) {
             titleResId = R.string.title_identity_self;
         }
 
@@ -587,7 +587,7 @@ public class GroupInfoFragment extends ListFragment
             if (checked.get(i)) {
                 GroupMembersAdapter.GroupMember member =
                     (GroupMembersAdapter.GroupMember) mMembersAdapter.getItem(i);
-                if (!Authenticator.isSelfJID(getContext(), member.contact.getJID())) {
+                if (!Kontalk.get().getDefaultAccount().isSelfJID(member.contact.getJID())) {
                     users.add(member.contact.getJID());
                 }
             }

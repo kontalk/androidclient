@@ -47,7 +47,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.AttachmentComponent;
@@ -296,7 +295,7 @@ public class MessagesController {
 
         for (String member : members) {
             // do not add ourselves...
-            if (Authenticator.isSelfJID(mContext, member)) {
+            if (Kontalk.get().getDefaultAccount().isSelfJID(member)) {
                 // ...but mark our membership
                 MessagesProviderClient.setGroupMembership(mContext,
                         group.getContent().getJid().toString(), MyMessages.Groups.MEMBERSHIP_MEMBER);
@@ -400,7 +399,7 @@ public class MessagesController {
                         removed, false);
                 // set our membership to parted if we were removed from the group
                 for (String removedJid : removed) {
-                    if (Authenticator.isSelfJID(mContext, removedJid)) {
+                    if (Kontalk.get().getDefaultAccount().isSelfJID(removedJid)) {
                         MessagesProviderClient.setGroupMembership(mContext,
                                 group.getContent().getJid().toString(), MyMessages.Groups.MEMBERSHIP_KICKED);
                         break;

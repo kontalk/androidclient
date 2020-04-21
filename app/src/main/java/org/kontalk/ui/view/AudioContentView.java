@@ -125,17 +125,17 @@ public class AudioContentView extends RelativeLayout
         return 5;
     }
 
-    private void clear() {
-        mComponent = null;
-    }
-
-    // FIXME this is crap
-    private void setTheme(MessageListItemTheme theme) {
+    @Override
+    public void onApplyTheme(MessageListItemTheme theme) {
         if (theme.isFullWidth()) {
             RelativeLayout.LayoutParams params = (LayoutParams) mSeekBar.getLayoutParams();
             params.width = LayoutParams.MATCH_PARENT;
             // no layout has been requested yet - mSeekBar.setLayoutParams(params);
         }
+    }
+
+    private void clear() {
+        mComponent = null;
     }
 
     @Override
@@ -248,7 +248,6 @@ public class AudioContentView extends RelativeLayout
                 parent, false);
         if (view != null) {
             view.mAudioPlayerControl = control;
-            view.setTheme(theme);
         }
         return view;
     }

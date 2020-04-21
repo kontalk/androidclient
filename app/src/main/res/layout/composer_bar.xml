@@ -28,12 +28,13 @@
     <ImageButton
         android:id="@+id/emoji_button"
         style="?attr/borderlessButtonStyle"
-        android:src="@drawable/ic_emoji"
+        app:srcCompat="@drawable/ic_emoji"
         android:adjustViewBounds="false"
         android:drawablePadding="0dip"
         android:layout_width="48dp"
         android:layout_height="wrap_content"
         android:minHeight="48dip"
+        android:scaleType="centerCrop"
         android:layout_gravity="bottom"
         android:layout_alignBottom="@+id/text_editor"
         android:contentDescription="@string/menu_smileys" />
@@ -66,7 +67,7 @@
         android:layout_width="fill_parent"
         android:layout_toStartOf="@+id/audio_send_button"
         android:layout_toLeftOf="@+id/audio_send_button"
-        android:background="@android:color/white"
+        android:background="?attr/colorBackgroundFloating"
         android:id="@+id/record_layout"
         android:clickable="true"
         android:visibility="gone">
@@ -107,7 +108,7 @@
             android:paddingStart="13dp"
             android:paddingLeft="13dp"
             android:orientation="horizontal"
-            android:background="@android:color/white">
+            android:background="?attr/colorBackgroundFloating">
 
             <ImageView
                 android:layout_height="wrap_content"
@@ -134,11 +135,12 @@
     <ImageButton
         android:id="@+id/attach_button"
         style="?attr/borderlessButtonStyle"
-        android:src="@drawable/ic_attach"
+        app:srcCompat="@drawable/ic_attach"
         android:drawablePadding="0dip"
         android:layout_width="48dip"
         android:layout_height="wrap_content"
         android:minHeight="48dip"
+        android:scaleType="centerCrop"
         android:layout_alignBottom="@id/text_editor"
         android:layout_toLeftOf="@+id/send_button"
         android:layout_toStartOf="@+id/send_button"
@@ -157,7 +159,9 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:contentDescription="@string/send"
-        android:nextFocusLeft="@+id/attach_button" />
+        android:scaleType="centerCrop"
+        android:nextFocusLeft="@+id/attach_button"
+        tools:visibility="visible"/>
 
     <ImageButton
         android:id="@+id/audio_send_button"
@@ -169,10 +173,13 @@
         android:minHeight="48dip"
         android:drawablePadding="0dip"
         android:adjustViewBounds="false"
+        android:scaleType="centerCrop"
         android:layout_alignLeft="@id/send_button"
         android:layout_alignStart="@id/send_button"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignBottom="@+id/text_editor"/>
+        android:layout_alignBottom="@+id/text_editor"
+        android:contentDescription="@string/ptt_button"
+        tools:visibility="invisible"/>
 
 </org.kontalk.ui.view.ComposerBar>

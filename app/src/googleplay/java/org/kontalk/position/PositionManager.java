@@ -30,6 +30,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.widget.Toast;
 
 import org.kontalk.R;
+import org.kontalk.ui.position.adapter.PlacesAdapter;
+import org.kontalk.ui.position.PositionGoogleFragment;
+import org.kontalk.ui.position.PositionOsmFragment;
+import org.kontalk.ui.position.adapter.SearchPlacesAdapter;
+import org.kontalk.ui.position.SendPositionGoogleFragment;
+import org.kontalk.ui.position.SendPositionOsmFragment;
 import org.kontalk.util.Preferences;
 
 

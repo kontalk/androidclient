@@ -22,6 +22,8 @@
     <color name="app_primary_dark">#1976D2</color>
     <color name="app_accent">#03A9F4</color>
 
+    <color name="navigation_bar">@android:color/white</color>
+
     <!-- text color -->
     <color name="text_color_draft">#ffff0000</color>
 
@@ -38,7 +40,8 @@
     <color name="audio_pbar_record">#ffdd1812</color>
     <color name="audio_pbar_play">#ff00acec</color>
 
-    <color name="date_stamp_background">@color/app_accent</color>
+    <color name="badge_color">@color/app_accent</color>
+    <color name="date_stamp_background">@color/badge_color</color>
 
     <color name="warning_bar_background_fatal">#f44336</color>
     <color name="warning_bar_text_fatal">@android:color/white</color>
@@ -47,12 +50,16 @@
 
     <color name="notification_name_color">@android:color/white</color>
 
+    <color name="showcase_text_color">@android:color/white</color>
+
     <color name="button_danger">#f44336</color>
     <color name="button_success">#4caf50</color>
 
     <color name="pinned_header_text">#a7a7a7</color>
 
-    <color name="alpha_black">#66000000</color>
+    <color name="disabled_conversations_overlay">#ccffffff</color>
+    <color name="disabled_messages_overlay">#66000000</color>
+
     <color name="app_background_unsafe_filter">#23ff0000</color>
 
     <!-- notification LED colors -->
@@ -62,12 +69,21 @@
     <color name="yellow_light">#FFBB33</color>
     <color name="red_light">#FF4444</color>
 
+    <color name="position_send_color">#1976D2</color>
+
     <color name="bg_default_contact">#bbbbbb</color>
 
     <color name="map_placeholder_background">#552196F3</color>
 
     <color name="gray_circular">#ECECEC</color>
-    <color name="gray_background">#F2F2F2</color>
-    <color name="divider">#d9d9d9</color>
+    <color name="location_item_header_background">#F2F2F2</color>
+    <color name="location_item_divider">#d9d9d9</color>
+
+    <color name="chat_quote_line_color">@color/app_primary_dark</color>
+
+    <!-- 87% black -->
+    <color name="primary_text_light">#de000000</color>
+    <!-- 54% black -->
+    <color name="secondary_text_light">#8a000000</color>
 
 </resources>

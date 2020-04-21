@@ -48,13 +48,13 @@ import android.text.TextUtils;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.XMPPUtils;
 
 
 /**
@@ -123,6 +123,7 @@ public class Syncer {
         SyncResult syncResult)
             throws OperationCanceledException {
 
+        final MyAccount myAccount = Authenticator.fromSystemAccount(context, account);
         final Map<String, RawPhoneNumberEntry> lookupNumbers = new HashMap<>();
         final List<String> jidList = new ArrayList<>();
 
@@ -281,7 +282,7 @@ public class Syncer {
                             try {
                                 PGPPublicKey pubKey = PGP.getMasterKey(entry.publicKey);
                                 // trust our own key blindly
-                                int trustLevel = Authenticator.isSelfJID(mContext, entry.from) ?
+                                int trustLevel = myAccount.isSelfJID(entry.from) ?
                                     Keyring.TRUST_VERIFIED : -1;
                                 // update keys table immediately
                                 Keyring.setKey(mContext, entry.from.toString(), entry.publicKey, trustLevel);
@@ -318,11 +319,13 @@ public class Syncer {
                          * in the where condition so we will have a match.
                          */
                         String origJid;
-                        if (data != null)
-                            origJid = XMPPUtils.createLocalJID(mContext,
-                                XmppStringUtils.parseLocalpart(entry.from.toString()));
-                        else
+                        if (data != null) {
+                            origJid = myAccount.createLocalJID(XmppStringUtils
+                                .parseLocalpart(entry.from.toString()));
+                        }
+                        else {
                             origJid = entry.from.toString();
+                        }
                         usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
                             Users.JID + " = ?", new String[] { origJid });
 
@@ -330,13 +333,14 @@ public class Syncer {
                         registeredValues.remove(Users.DISPLAY_NAME);
 
                         // if this is our own contact, trust our own key later
-                        if (Authenticator.isSelfJID(mContext, entry.from)) {
+                        if (myAccount.isSelfJID(entry.from)) {
                             // register our profile while we're at it
                             if (data != null) {
                                 // add contact
-                                addProfile(account,
-                                    Authenticator.getDefaultDisplayName(mContext),
-                                    data.number, data.jid, operations, op++);
+                                String displayName = myAccount.getDisplayName();
+                                addProfile(account, displayName,
+                                    data.number, data.jid,
+                                    operations, op++);
                             }
                         }
                     }

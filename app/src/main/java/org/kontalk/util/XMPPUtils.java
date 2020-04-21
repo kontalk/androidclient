@@ -36,11 +36,8 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import android.content.Context;
 import android.graphics.Color;
 import androidx.annotation.ColorInt;
-
-import org.kontalk.client.EndpointServer;
 
 
 /**
@@ -122,13 +119,6 @@ public class XMPPUtils {
 
     public static boolean isLocalJID(String jid, String host) {
         return XmppStringUtils.parseDomain(jid).equalsIgnoreCase(host);
-    }
-
-    public static String createLocalJID(Context context, String name) {
-        EndpointServer server = Preferences.getEndpointServer(context);
-        if (server == null)
-            throw new IllegalArgumentException("server is null");
-        return XmppStringUtils.completeJidFrom(name, server.getNetwork());
     }
 
     public static boolean equalsBareJID(String full, String bare) {

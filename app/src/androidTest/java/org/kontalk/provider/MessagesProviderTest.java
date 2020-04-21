@@ -39,8 +39,8 @@ import androidx.test.rule.provider.ProviderTestRule;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.MessageUtils;
-import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -163,7 +163,7 @@ public class MessagesProviderTest {
 
         // user list should return charlie too now
         actualMembers = MessagesProviderClient.getGroupMembers(mContext, groupJid, 0);
-        members = SystemUtils.concatenate(members, "charlie@prime.kontalk.net");
+        members = DataUtils.concatenate(members, "charlie@prime.kontalk.net");
         assertThat(actualMembers, arrayContainingInAnyOrder(members));
     }
 

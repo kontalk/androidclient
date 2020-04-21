@@ -34,7 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@android:color/white"
+        android:background="?android:attr/windowBackground"
         android:padding="8dp"
         android:visibility="visible">
 
@@ -64,7 +64,7 @@
             android:layout_marginStart="16dp"
             android:layout_toEndOf="@+id/avatar"
             android:layout_toRightOf="@+id/avatar"
-            android:textColor="@color/app_accent"/>
+            android:textColor="?colorAccent"/>
 
     </RelativeLayout>
 
@@ -85,7 +85,7 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_navigate"
         android:visibility="visible"
-        app:backgroundTint="@color/app_primary_dark"
+        app:backgroundTint="?colorAccent"
         app:fabSize="normal"
         app:layout_anchor="@+id/bottom_view"
         app:layout_anchorGravity="top|end"/>

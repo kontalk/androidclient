@@ -24,25 +24,22 @@ import java.util.regex.Pattern;
 import com.vanniktech.emoji.EmojiTextView;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
+
 import androidx.core.content.ContextCompat;
 import androidx.core.text.util.LinkifyCompat;
-import androidx.core.widget.TextViewCompat;
+
 import android.text.Editable;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
 import android.text.util.Linkify;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.message.TextComponent;
-import org.kontalk.util.Preferences;
+import org.kontalk.util.ViewUtils;
 
 
 /**
@@ -98,7 +95,7 @@ public class TextContentView extends EmojiTextView
      * http://stackoverflow.com/questions/7439748/why-is-wrap-content-in-multiple-line-textview-filling-parent
      * https://github.com/qklabs/qksms/blob/master/QKSMS/src/main/java/com/moez/QKSMS/ui/view/QKTextView.java
      */
-    void enableMeasureHack(boolean enabled) {
+    public void enableMeasureHack(boolean enabled) {
         mMeasureHack = enabled;
     }
 
@@ -131,7 +128,6 @@ public class TextContentView extends EmojiTextView
         mComponent = component;
 
         SpannableStringBuilder formattedMessage = formatMessage(highlight);
-        setTextStyle(this, true);
 
         // linkify!
         if (formattedMessage.length() < MAX_AFFORDABLE_SIZE) {
@@ -162,6 +158,13 @@ public class TextContentView extends EmojiTextView
     @Override
     public int getPriority() {
         return 10;
+    }
+
+    @Override
+    public void onApplyTheme(MessageListItemTheme theme) {
+        ViewUtils.setMessageBodyTextStyle(this, true);
+        setTextColor(theme.getTextColor());
+        setLinkTextColor(theme.getTextColor());
     }
 
     public boolean isEncryptionPlaceholder() {
@@ -243,48 +246,6 @@ public class TextContentView extends EmojiTextView
         if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
             // from http://stackoverflow.com/a/12303155/1045199
             formattedMessage.append("\u200b"); // was: \u2060
-    }
-
-    /**
-     * Sets the text style based on the text size user preference.
-     * FIXME there is something weird about this method, rewrite it from scratch
-     * @param textView the view to apply the style
-     * @param applyBaseTheme true to apply a base TextAppearance first
-     */
-    static void setTextStyle(TextView textView, boolean applyBaseTheme) {
-        Context context = textView.getContext();
-        String size = Preferences.getFontSize(context);
-        int sizeId;
-        switch (size) {
-            case "small":
-                sizeId = android.R.style.TextAppearance_Small;
-                break;
-            case "large":
-                sizeId = android.R.style.TextAppearance_Large;
-                break;
-            default:
-                sizeId = android.R.style.TextAppearance;
-                break;
-        }
-
-        if (applyBaseTheme) {
-            // set a baseline theme
-            TextViewCompat.setTextAppearance(textView, android.R.style.TextAppearance);
-        }
-
-        // now apply the text size
-        try {
-            int[] attrs = {android.R.attr.textSize};
-            TypedArray ta = textView.getContext().getTheme().obtainStyledAttributes(sizeId, attrs);
-            float textSize = ta.getDimensionPixelSize(0, 0);
-            if (textSize > 0)
-                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-
-            ta.recycle();
-        }
-        catch (Resources.NotFoundException e) {
-            // nothing
-        }
     }
 
 }
