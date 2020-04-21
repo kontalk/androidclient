@@ -161,7 +161,7 @@ public class LocationContentView extends RelativeLayout
         ShapeDrawable defaultDrawable = new ShapeDrawable(new RoundRectShape(new float[]{rad, rad, rad, rad, rad, rad, rad, rad}, null, null));
         defaultDrawable.getPaint().setColor(ContextCompat.getColor(getContext(), R.color.map_placeholder_background));
         Drawable drawable = getContext().getResources().getDrawable(iconRes).mutate();
-        DrawableCompat.setTint(drawable, ContextCompat.getColor(getContext(), R.color.app_primary));
+        DrawableCompat.setTint(drawable, ContextCompat.getColor(getContext(), R.color.position_send_color));
 
         return new CombinedDrawable(defaultDrawable, drawable);
     }
