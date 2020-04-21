@@ -127,10 +127,11 @@ public class ConversationsActivity extends MainActivity
                 Uri uri = null;
 
                 if (actionView) {
-                    Cursor c = getContentResolver().query(intent.getData(),
-                        new String[]{Syncer.DATA_COLUMN_PHONE},
-                        null, null, null);
+                    Cursor c = null;
                     try {
+                        c = getContentResolver().query(intent.getData(),
+                            new String[]{Syncer.DATA_COLUMN_PHONE},
+                            null, null, null);
                         if (c != null && c.moveToFirst()) {
                             String phone = c.getString(0);
                             MyAccount account = Kontalk.get().getDefaultAccount();
@@ -138,6 +139,12 @@ public class ConversationsActivity extends MainActivity
                                 .createLocalpart(phone));
                             uri = Threads.getUri(userJID);
                         }
+                    }
+                    catch (SecurityException e) {
+                        // user denied access to contacts. Sorry!
+                        Toast.makeText(this, R.string.warn_external_contacts_denied,
+                            Toast.LENGTH_LONG).show();
+                        return true;
                     }
                     finally {
                         DataUtils.close(c);

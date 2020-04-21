@@ -688,6 +688,7 @@
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
 
+    <string name="warn_external_contacts_denied">You denied access to contacts. You must open the chat you want manually.</string>
     <string name="err_validation_contacts_denied">Kontalk needs access to contacts in order to function properly. How can it know the people you can chat with??\nYou may cancel now, but you will be asked again once you\'ve registered.</string>
     <string name="err_contacts_denied">Kontalk needs access to contacts in order to function properly. How can it know the people you can chat with??\nYou can allow access to contacts from Android settings.</string>
     <string name="warn_contacts_denied">You denied access to contacts. You won\'t be able to see changes in contacts here.</string>

@@ -102,6 +102,7 @@ import org.kontalk.service.msgcenter.event.UserUnblockedEvent;
 import org.kontalk.service.msgcenter.event.VersionEvent;
 import org.kontalk.service.msgcenter.event.VersionRequest;
 import org.kontalk.sync.Syncer;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
@@ -322,34 +323,46 @@ public class ComposeMessageFragment extends AbstractComposeFragment
          * FIXME this will retrieve name directly from contacts,
          * resulting in a possible discrepancy with users database
          */
-        Cursor c = cres.query(uri, new String[] {
-            Syncer.DATA_COLUMN_DISPLAY_NAME,
-            Syncer.DATA_COLUMN_PHONE }, null, null, null);
-        if (c.moveToFirst()) {
-            mUserName = c.getString(0);
-            mUserPhone = c.getString(1);
+        Cursor c = null;
+        try {
+            c = cres.query(uri, new String[]{
+                Syncer.DATA_COLUMN_DISPLAY_NAME,
+                Syncer.DATA_COLUMN_PHONE}, null, null, null);
+            if (c != null && c.moveToFirst()) {
+                mUserName = c.getString(0);
+                mUserPhone = c.getString(1);
 
-            // FIXME should it be retrieved from RawContacts.SYNC3 ??
-            MyAccount account = Kontalk.get().getDefaultAccount();
-            mUserJID = account.createLocalJID(XMPPUtils
-                .createLocalpart(mUserPhone));
+                // FIXME should it be retrieved from RawContacts.SYNC3 ??
+                MyAccount account = Kontalk.get().getDefaultAccount();
+                mUserJID = account.createLocalJID(XMPPUtils
+                    .createLocalpart(mUserPhone));
 
-            threadId = MessagesProviderClient.findThread(getContext(), mUserJID);
+                threadId = MessagesProviderClient.findThread(getContext(), mUserJID);
+            }
         }
-        c.close();
+        catch (SecurityException e) {
+            // user denied access to contacts. Sorry!
+            Toast.makeText(getContext(), R.string.warn_external_contacts_denied,
+                Toast.LENGTH_LONG).show();
+            closeConversation();
+            return;
+        }
+        finally {
+            DataUtils.close(c);
+        }
 
         if (threadId > 0) {
-            mConversation = Conversation.loadFromId(getActivity(),
+            mConversation = Conversation.loadFromId(getContext(),
                 threadId);
             setThreadId(threadId);
         }
         else if (mUserJID == null) {
-            Toast.makeText(getActivity(), R.string.err_no_contact,
+            Toast.makeText(getContext(), R.string.err_no_contact,
                 Toast.LENGTH_LONG).show();
             closeConversation();
         }
         else {
-            mConversation = Conversation.createNew(getActivity());
+            mConversation = Conversation.createNew(getContext());
             mConversation.setRecipient(mUserJID);
         }
     }
