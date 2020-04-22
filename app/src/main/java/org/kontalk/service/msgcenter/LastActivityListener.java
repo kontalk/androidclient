@@ -45,9 +45,9 @@ class LastActivityListener implements StanzaListener, ExceptionCallback {
     public void processException(Exception exception) {
         if (exception instanceof XMPPException.XMPPErrorException) {
             String id = ((XMPPException.XMPPErrorException) exception)
-                .getStanzaError().getStanza().getStanzaId();
+                .getRequest().getStanzaId();
             Jid jid = ((XMPPException.XMPPErrorException) exception)
-                .getStanzaError().getStanza().getFrom();
+                .getRequest().getFrom();
             MessageCenterService.bus()
                 .post(new LastActivityEvent(exception, jid, id));
         }

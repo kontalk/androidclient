@@ -62,17 +62,18 @@ import org.jivesoftware.smack.sm.StreamManagementException;
 import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smack.util.SuccessCallback;
-import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.csi.ClientStateIndicationManager;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
+import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 import org.jivesoftware.smackx.forward.packet.Forwarded;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.iqversion.packet.Version;
+import org.jivesoftware.smackx.omemo.OmemoManager;
 import org.jivesoftware.smackx.ping.PingFailedListener;
 import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
@@ -122,8 +123,8 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.MyAccount;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
-import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.HTTPFileUpload;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PublicKeyPublish;
@@ -152,7 +153,6 @@ import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
-import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.KeyPairGeneratorService;
@@ -196,6 +196,7 @@ import org.kontalk.service.msgcenter.group.PartCommand;
 import org.kontalk.service.msgcenter.group.SetSubjectCommand;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.DataUtils;
+import org.kontalk.upload.HTTPFileUploadService;
 import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -338,6 +339,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private WakeLock mPingLock;
     LocalBroadcastManager mLocalBroadcastManager;
     private AlarmManager mAlarmManager;
+    private OmemoManager mOmemoManager;
 
     private LastActivityListener mLastActivityListener;
     private PingFailedListener mPingFailedListener;
@@ -979,9 +981,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mConnection = null;
             }
 
+            if (mOmemoManager != null) {
+                mOmemoManager.stopStanzaAndPEPListeners();
+            }
+
             // clear the connection only if we are quitting
-            if (!restarting)
+            if (!restarting) {
+                mOmemoManager = null;
                 mConnection = null;
+            }
         }
 
         if (mUploadServices != null) {
@@ -1347,8 +1355,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             encryptTo = new String[] { message.getRecipient() };
                         }
 
-                        File encrypted = MessageUtils.encryptFile(this, in,
-                            DataUtils.toString(encryptTo));
+                        File encrypted = MessageUtils.encryptFile(this, in, XMPPUtils.parseJids(encryptTo));
                         fileLength = encrypted.length();
                         preMediaUri = Uri.fromFile(encrypted);
                     }
@@ -1359,6 +1366,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 else {
                     fileLength = MediaStorage.getLength(this, preMediaUri);
                 }
+            }
+            catch (SmackException.NotConnectedException e) {
+                // will retry at next reconnection
+                Log.w(TAG, "not connected, encryption failed, will send message later", e);
+                return;
             }
             catch (Exception e) {
                 Log.w(TAG, "error preprocessing media: " + preMediaUri, e);
@@ -1742,7 +1754,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         filter = new StanzaTypeFilter(Presence.class);
         connection.addAsyncStanzaListener(presenceListener, filter);
 
-        filter = new StanzaTypeFilter(org.jivesoftware.smack.packet.Message.class);
+        filter = new StanzaFilter() {
+            @Override
+            public boolean accept(Stanza stanza) {
+                // ignore OMEMO messages, they will be processed by smack-omemo
+                // except delayed messages which must be processed manually via decrypt()
+                // .......ARGH!!!
+                // FIXME is this still applicable to 4.4.0?
+                return stanza instanceof org.jivesoftware.smack.packet.Message/* &&
+                    (!OmemoManager.stanzaContainsOmemoElement(stanza) ||
+                        stanza.hasExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE))*/;
+            }
+        };
         connection.addSyncStanzaListener(new MessageListener(this), filter);
 
         // this is used as a reply callback
@@ -1830,12 +1853,37 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 final XMPPConnection conn = mConnection;
                 if (conn != null && conn.isConnected()) {
                     Jid jid = conn.getXMPPServiceDomain();
-                    if (Keyring.getPublicKey(MessageCenterService.this, jid.toString(), MyUsers.Keys.TRUST_UNKNOWN) == null) {
+                    if (Keyring.getPublicKey(MessageCenterService.this, jid.toString(), Keyring.TRUST_UNKNOWN) == null) {
                         BUS.post(new PublicKeyRequest(jid));
                     }
                 }
             }
         });
+
+        boolean supported;
+        try {
+            supported = OmemoManager.serverSupportsOmemo(mConnection,
+                mConnection.getXMPPServiceDomain());
+        }
+        catch (Exception e) {
+            supported = false;
+            Log.w(TAG, "unable to determine server support for OMEMO", e);
+            ReportingManager.logException(e);
+        }
+
+        if (supported) {
+            // we logged in so we can now initialize OMEMO
+            mOmemoManager = OmemoManager.getInstanceFor(connection);
+            mOmemoManager.resumeStanzaAndPEPListeners();
+            try {
+                mOmemoManager.initialize();
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to initialize OMEMO engine", e);
+                ReportingManager.logException(e);
+                mOmemoManager = null;
+            }
+        }
 
         // re-acquire the wakelock for a limited time to allow for messages to come
         // it will then be released automatically
@@ -1860,30 +1908,105 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Discovers info and items.
      */
     private void discovery() {
-        StanzaFilter filter;
+        // FIXME some messed up, absolutely unmodular code here
 
-        Jid to;
-        try {
-            to = JidCreate.domainBareFrom(mServer.getNetwork());
+        final KontalkConnection connection = mConnection;
+        if (connection != null) {
+            Async.go(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        DiscoverInfo info = connection.getDiscoverInfo();
+
+                        if (info.containsFeature(PushRegistration.NAMESPACE)) {
+                            discoverPushRegistration(connection);
+                        }
+                    }
+                    catch (SmackException.NoResponseException e) {
+                        Log.w(TAG, "No response for discovery of info was received", e);
+                    }
+                    catch (XMPPException.XMPPErrorException e) {
+                        Log.w(TAG, "Error requesting discovery of info", e);
+                    }
+                    catch (NotConnectedException ignored) {
+                    }
+                    catch (InterruptedException ignored) {
+                    }
+                }
+            }, "ServerDiscoveryInfo");
+
+            Async.go(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ServiceDiscoveryManager manager = ServiceDiscoveryManager
+                            .getInstanceFor(connection);
+
+                        List<DiscoverItems.Item> items = manager.
+                            discoverItems(connection.getXMPPServiceDomain()).getItems();
+
+                        for (DiscoverItems.Item item : items) {
+                            DiscoverInfo info = manager.discoverInfo(item.getEntityID());
+
+                            if (info.containsFeature(HTTPFileUpload.NAMESPACE)) {
+                                Log.d(MessageCenterService.TAG, "got upload service: " + item.getEntityID());
+                                addUploadService(new HTTPFileUploadService(connection,
+                                    item.getEntityID().asBareJid()), 0);
+                                // MessagesController will send pending messages
+                            }
+                        }
+                    }
+                    catch (SmackException.NoResponseException e) {
+                        Log.w(TAG, "No response for discovery of items was received", e);
+                    }
+                    catch (XMPPException.XMPPErrorException e) {
+                        Log.w(TAG, "Error requesting discovery of items", e);
+                    }
+                    catch (NotConnectedException ignored) {
+                    }
+                    catch (InterruptedException ignored) {
+                    }
+                }
+            }, "ServerDiscoveryItems");
         }
-        catch (XmppStringprepException e) {
-            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-            // report it because it's a big deal
-            ReportingManager.logException(e);
-            return;
+    }
+
+    /** For call by {@link #discovery()} listeners. */
+    void discoverPushRegistration(XMPPConnection connection) throws XMPPException.XMPPErrorException,
+            NotConnectedException, InterruptedException, SmackException.NoResponseException {
+        ServiceDiscoveryManager manager = ServiceDiscoveryManager.getInstanceFor(connection);
+        List<DiscoverItems.Item> items = manager.discoverItems(connection.getXMPPServiceDomain(),
+            PushRegistration.NAMESPACE).getItems();
+
+        for (DiscoverItems.Item item : items) {
+            String jid = item.getEntityID().toString();
+            // google push notifications
+            if (("gcm.push." + connection.getXMPPServiceDomain().toString()).equals(jid)) {
+                String senderId = item.getNode();
+                MessageCenterService.sPushSenderId = senderId;
+
+                if (mPushNotifications) {
+                    String oldSender = Preferences.getPushSenderId();
+
+                    // store the new sender id
+                    Preferences.setPushSenderId(senderId);
+
+                    // begin a registration cycle if senderId is different
+                    if (oldSender != null && !oldSender.equals(senderId)) {
+                        IPushService service = PushServiceManager.getInstance(this);
+                        if (service != null)
+                            service.unregister(sPushListener);
+                        // unregister will see this as an attempt to register again
+                        mPushRegistrationCycle = true;
+                    }
+                    else {
+                        // begin registration immediately
+                        pushRegister();
+                    }
+                }
+            }
         }
 
-        DiscoverInfo info = new DiscoverInfo();
-        info.setTo(to);
-        filter = new StanzaIdFilter(info.getStanzaId());
-        mConnection.addAsyncStanzaListener(new DiscoverInfoListener(this), filter);
-        sendPacket(info);
-
-        DiscoverItems items = new DiscoverItems();
-        items.setTo(to);
-        filter = new StanzaIdFilter(items.getStanzaId());
-        mConnection.addAsyncStanzaListener(new DiscoverItemsListener(this), filter);
-        sendPacket(items);
     }
 
     synchronized void active(boolean available) {
@@ -1976,10 +2099,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             p.setStatus(status);
         if (mode != null)
             p.setMode(mode);
-
-        // TODO find a place for this
-        p.addExtension(new CapsExtension("http://www.kontalk.org/", "none", "sha-1"));
-
         return p;
     }
 
@@ -2371,6 +2490,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             attachment.getMime(), attachment.getLength(),
                             attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT));
                     }
+
+                    // fall back to basic until we'll have a XEP for this
+                    message.setSecurityFlags(Coder.SECURITY_BASIC);
                 }
 
                 // add location data if present
@@ -2381,6 +2503,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     UserLocation userLocation = new UserLocation(lat, lon,
                         location.getText(), location.getStreet());
                     m.addExtension(userLocation);
+
+                    // fall back to basic until we'll have a XEP for this
+                    message.setSecurityFlags(Coder.SECURITY_BASIC);
                 }
 
                 // add referenced message if any
@@ -2408,38 +2533,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             if (message.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) {
-                byte[] toMessage = null;
                 boolean encryptError = false;
                 try {
-                    Coder coder = Keyring.getEncryptCoder(this, mServer, key, DataUtils.toString(toGroup));
-                    if (coder != null) {
+                    Coder coder = Keyring.getEncryptCoder(this, message.getSecurityFlags(),
+                        mConnection, mServer, key, toGroup);
+                    // cache security flags
+                    for (Jid jid : toGroup) {
+                        Contact.findByUserId(this, jid.asBareJid().toString())
+                            .setSecurityFlags(coder.getSupportedFlags());
+                    }
 
-                        // no extensions, create a simple text version to save space
-                        if (msg.getExtensions().size() == 0) {
-                            if (!(request instanceof SendDeliveryReceiptRequest)) {
-                                // a special case for delivery receipts whom doesn't have a body
-                                // but we want to encrypt it for groups (extensions.size() > 0)
-                                toMessage = coder.encryptText(msg.getBody());
-                            }
-                        }
+                    // security flags changed (most probably because of coder fallback)
+                    // update message accordingly
+                    if ((message.getSecurityFlags() & coder.getSupportedFlags()) == 0) {
+                        message.setSecurityFlags(message.getSecurityFlags() | coder.getSupportedFlags());
+                        MessagesProviderClient.MessageUpdater.forMessage(this, message.getDatabaseId())
+                            .setSecurityFlags(message.getSecurityFlags())
+                            .commit();
+                    }
 
-                        // some extension, encrypt whole stanza just to be sure
-                        else {
-                            toMessage = coder.encryptStanza(msg.toXML(null));
-                        }
+                    org.jivesoftware.smack.packet.Message encMsg = null;
 
-                        if (toMessage != null) {
-                            org.jivesoftware.smack.packet.Message encMsg =
-                                new org.jivesoftware.smack.packet.Message(msg.getTo(), msg.getType());
+                    if (!(request instanceof SendDeliveryReceiptRequest && groupController == null)) {
+                        encMsg = coder.encryptMessage(msg, getString(R.string.text_encrypted));
+                    }
 
-                            encMsg.setBody(getString(R.string.text_encrypted));
-                            encMsg.setStanzaId(m.getStanzaId());
-                            encMsg.addExtension(new E2EEncryption(toMessage));
-
-                            // save the unencrypted stanza for later
-                            originalStanza = msg;
-                            m = encMsg;
-                        }
+                    if (encMsg != null) {
+                        m = encMsg;
                     }
                 }
 
@@ -2455,12 +2575,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     encryptError = true;
                 }
                 catch (GeneralSecurityException e) {
+                    Log.w(TAG, "encryption failed!", e);
+
                     // warn user: message will not be sent
                     if (MessagingNotification.isPaused(convJid)) {
                         Toast.makeText(this, R.string.warn_encryption_failed,
                             Toast.LENGTH_LONG).show();
                     }
                     encryptError = true;
+                }
+                catch (SmackException.NotConnectedException e) {
+                    // will retry at next reconnection
+                    Log.w(TAG, "not connected, encryption failed, will send message later", e);
+                    mIdleHandler.release();
+                    return;
                 }
 
                 if (encryptError) {

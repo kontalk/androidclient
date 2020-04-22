@@ -126,24 +126,12 @@ public class PersonalKey implements Parcelable {
         return PGP.getFingerprint(mPair.authKey.getPublicKey());
     }
 
-    public PGPKeyPairRing storeNetwork(String userId, String network, String name, String passphrase) throws PGPException, IOException {
-        return store(name, userId + '@' + network, null, passphrase);
+    public PGPKeyPairRing storeNetwork(String userId, String network, String passphrase) throws PGPException, IOException {
+        return store(null, userId + '@' + network, null, passphrase);
     }
 
     public PGPKeyPairRing store(String name, String email, String comment, String passphrase) throws PGPException, IOException {
-        // name[ (comment)] <[email]>
-        StringBuilder userid = new StringBuilder(name);
-
-        if (comment != null) userid
-            .append(" (")
-            .append(comment)
-            .append(')');
-
-        userid.append(" <");
-        if (email != null)
-            userid.append(email);
-        userid.append('>');
-
+        PGPUserID userid = new PGPUserID(name, comment, email);
         return PGP.store(mPair, userid.toString(), passphrase);
     }
 

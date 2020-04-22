@@ -165,7 +165,7 @@ android {
 
 dependencies {
     api (project(':client-common-java')) {
-        exclude group: 'net.sf.kxml'
+        exclude group: 'xpp3', module: 'xpp3_min'
     }
 
     // support libraries
@@ -187,7 +187,12 @@ dependencies {
     // network/protocol libraries
     implementation "org.igniterealtime.smack:smack-tcp:$smackVersion"
     implementation "org.igniterealtime.smack:smack-experimental:$smackVersion"
-    implementation "org.igniterealtime.smack:smack-android:$smackVersion"
+    implementation ("org.igniterealtime.smack:smack-android:$smackVersion") {
+        exclude group: 'xpp3', module: 'xpp3_min'
+    }
+    implementation "org.igniterealtime.smack:smack-omemo:$smackVersion"
+    implementation "org.igniterealtime.smack:smack-omemo-signal:$smackVersion"
+    implementation 'org.whispersystems:signal-protocol-java:2.8.1'
     implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
     implementation 'com.squareup.okhttp3:okhttp:4.5.0'
     implementation 'com.segment.backo:backo:1.0.0'

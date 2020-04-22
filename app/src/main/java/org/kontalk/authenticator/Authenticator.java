@@ -197,8 +197,11 @@ public class Authenticator extends AbstractAccountAuthenticator {
         // trusted keys
         Map<String, Keyring.TrustedFingerprint> trustedKeys = Keyring.getTrustedKeys(ctx);
 
+        String displayName = m.getUserData(acc, DATA_NAME);
+
         PersonalKeyExporter exp = new PersonalKeyExporter();
-        exp.save(privateKey, publicKey, dest, passphrase, exportPassphrase, bridgeCert, trustedKeys, acc.name);
+        exp.save(privateKey, publicKey, dest, passphrase, exportPassphrase,
+            bridgeCert, trustedKeys, acc.name, displayName);
     }
 
     public static byte[] getPrivateKeyExportData(Context ctx, String passphrase, String exportPassphrase)

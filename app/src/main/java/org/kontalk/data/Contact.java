@@ -30,6 +30,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import org.bouncycastle.util.Arrays;
+import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.util.XmppStringUtils;
@@ -62,7 +63,6 @@ import org.kontalk.R;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderClient;
-import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -132,6 +132,9 @@ public class Contact {
 
     /** Cached name information from system contacts. It will override our internal name. */
     private StructuredName mStructuredName;
+
+    /** Supported security flags. Detected by {@link org.kontalk.crypto.Coder}s. */
+    private int mSecurityFlags = -1;
 
     private static final class StructuredName {
         public final String displayName;
@@ -505,6 +508,14 @@ public class Contact {
         mLastSeen = lastSeen;
     }
 
+    public int getSecurityFlags() {
+        return mSecurityFlags;
+    }
+
+    public void setSecurityFlags(int securityFlags) {
+        mSecurityFlags = securityFlags;
+    }
+
     public boolean isSelf() {
         try {
             return Kontalk.get().getDefaultAccount().isSelfJID(JidCreate.bareFrom(mJID));
@@ -765,9 +776,9 @@ public class Contact {
 
     private static void retrieveKeyInfo(Context context, Contact c) {
         // trusted key
-        Keyring.TrustedPublicKeyData trustedKeyring = Keyring.getPublicKeyData(context, c.getJID(), Keys.TRUST_IGNORED);
+        Keyring.TrustedPublicKeyData trustedKeyring = Keyring.getPublicKeyData(context, c.getJID(), Keyring.TRUST_IGNORED);
         // latest (possibly unknown) fingerprint
-        c.mFingerprint = Keyring.getFingerprint(context, c.getJID(), Keys.TRUST_UNKNOWN);
+        c.mFingerprint = Keyring.getFingerprint(context, c.getJID(), Keyring.TRUST_UNKNOWN);
         if (trustedKeyring != null) {
             c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring.keyData);
             c.mTrustedLevel = trustedKeyring.trustLevel;
@@ -855,6 +866,21 @@ public class Contact {
         }
 
         return data;
+    }
+
+    public static int[] getSecurityFlags(Jid[] users) {
+        final int[] flags = new int[users.length];
+        for (int i = 0; i < users.length; i++) {
+            // hit the cache directly since security flags are not in the database
+            Contact contact = cache.get(users[i].toString());
+            if (contact == null) {
+                flags[i] = -1;
+            }
+            else {
+                flags[i] = contact.getSecurityFlags();
+            }
+        }
+        return flags;
     }
 
     public static Cursor queryContacts(Context context) {

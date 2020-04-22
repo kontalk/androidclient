@@ -22,13 +22,21 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smackx.carbons.packet.CarbonExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.forward.packet.Forwarded;
+import org.jivesoftware.smackx.omemo.OmemoManager;
+import org.jivesoftware.smackx.omemo.OmemoMessage;
+import org.jivesoftware.smackx.omemo.element.OmemoElement;
+import org.jivesoftware.smackx.omemo.listener.OmemoMessageListener;
+import org.jivesoftware.smackx.omemo.util.OmemoConstants;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.jid.Jid;
@@ -83,17 +91,29 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
-import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
-
 
 /**
  * Packet listener for message stanzas.
  * @author Daniele Ricci
  */
-class MessageListener extends WakefulMessageCenterPacketListener {
+class MessageListener extends WakefulMessageCenterPacketListener implements ConnectionListener, OmemoMessageListener {
+
+    private OmemoManager mOmemoManager;
 
     public MessageListener(MessageCenterService instance) {
         super(instance, "RECV");
+        getConnection().addConnectionListener(this);
+    }
+
+    @Override
+    public void authenticated(XMPPConnection connection, boolean resumed) {
+        // Because of the way the smack-omemo is designed, we can't separate
+        // incoming message handling from decryption.
+        // We'll have a local OmemoManager to inject decrypted messages in the
+        // incoming message processing workflow.
+        mOmemoManager = OmemoManager.getInstanceFor(connection);
+        mOmemoManager.removeOmemoMessageListener(this);
+        mOmemoManager.addOmemoMessageListener(this);
     }
 
     private static final class GroupMessageProcessingResult {
@@ -242,6 +262,29 @@ class MessageListener extends WakefulMessageCenterPacketListener {
     }
 
     /**
+     * Process an incoming OMEMO message.
+     */
+    @Override
+    public void onOmemoMessageReceived(Stanza stanza, OmemoMessage.Received decryptedMessage) {
+        // duplicates the message to fool real processing
+        Message output = ((Message) stanza).asBuilder()
+            // TODO ignoring other decrypted message information
+            .setBody(decryptedMessage.getBody())
+            .build();
+
+        try {
+            processWakefulStanza(output);
+        }
+        catch (SmackException.NotConnectedException ignored) {
+        }
+    }
+
+    @Override
+    public void onOmemoCarbonCopyReceived(CarbonExtension.Direction direction, Message carbonCopy, Message wrappingMessage, OmemoMessage.Received decryptedCarbonCopy) {
+        // TODO will be used one day
+    }
+
+    /**
      * Process an incoming message packet.
      * @param m the message
      * @param chatStateEvent a chat state event that will be returned with missing information (e.g. group info in encrypted message)
@@ -298,78 +341,102 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             // ack request might not be encrypted
             boolean needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
 
-            ExtensionElement _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
+            try {
+                Coder coder = null;
+                int securityFlags = 0;
+                boolean verifyOnly = false;
 
-            if (_encrypted instanceof E2EEncryption) {
-                E2EEncryption mEnc = (E2EEncryption) _encrypted;
-                byte[] encryptedData = mEnc.getData();
+                if (m.hasExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE)) {
+                    securityFlags = Coder.SECURITY_BASIC;
+                }
 
-                // encrypted message
-                msg.setEncrypted(true);
-                msg.setSecurityFlags(Coder.SECURITY_BASIC);
+                else if (m.hasExtension(OmemoElement.NAME_ENCRYPTED, OmemoConstants.OMEMO_NAMESPACE_V_AXOLOTL)) {
+                    securityFlags = Coder.SECURITY_ADVANCED;
+                }
 
-                if (encryptedData != null) {
+                else if (m.hasExtension(OpenPGPSignedMessage.ELEMENT_NAME, OpenPGPSignedMessage.NAMESPACE)) {
+                    securityFlags = Coder.SECURITY_BASIC_SIGNED;
+                }
+                else {
+                    // use message body
+                    if (body != null)
+                        msg.addComponent(new TextComponent(body));
+                }
 
-                    // decrypt message
-                    try {
-                        Message innerStanza = decryptMessage(msg, encryptedData);
-                        if (innerStanza != null) {
-                            // copy some attributes over
-                            innerStanza.setTo(m.getTo());
-                            innerStanza.setFrom(m.getFrom());
-                            innerStanza.setType(m.getType());
-                            m = innerStanza;
+                if (securityFlags > 0) {
+                    Context context = getContext();
+                    EndpointServer server = getServer();
+                    if (server == null)
+                        server = Kontalk.get().getEndpointServer();
 
-                            if (!needAck) {
-                                // try the decrypted message
-                                needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
+                    PersonalKey key = Kontalk.get().getPersonalKey();
+
+                    if ((securityFlags & Coder.SECURITY_ADVANCED_ENCRYPTED) != 0 || (securityFlags & Coder.SECURITY_BASIC_ENCRYPTED) != 0) {
+                        coder = Keyring.getDecryptCoder(context, securityFlags, getConnection(),
+                            server, key, JidCreate.bareFromOrThrowUnchecked(msg.getSender(true)));
+                    }
+                    else {
+                        coder = Keyring.getVerifyCoder(context, server, msg.getSender(true));
+                        verifyOnly = true;
+                    }
+                }
+
+                if (coder != null) {
+                    if (verifyOnly) {
+                        // use message body
+                        if (body != null)
+                            msg.addComponent(new TextComponent(body));
+
+                        // old PGP signature
+                        ExtensionElement _pgpSigned = m.getExtension(OpenPGPSignedMessage.ELEMENT_NAME, OpenPGPSignedMessage.NAMESPACE);
+                        if (_pgpSigned instanceof OpenPGPSignedMessage) {
+                            OpenPGPSignedMessage pgpSigned = (OpenPGPSignedMessage) _pgpSigned;
+                            byte[] signedData = pgpSigned.getData();
+
+                            // signed message
+                            msg.setSecurityFlags(Coder.SECURITY_BASIC_SIGNED);
+
+                            if (signedData != null) {
+                                // check signature
+                                try {
+                                    checkSignedMessage(msg, pgpSigned.getData());
+                                    // at this point our message should be filled with the verified body
+                                }
+
+                                catch (Exception exc) {
+                                    Log.e(MessageCenterService.TAG, "signature check failed", exc);
+                                    // TODO what to do here?
+                                    msg.setSecurityFlags(msg.getSecurityFlags() |
+                                        Coder.SECURITY_ERROR_INVALID_SIGNATURE);
+                                }
                             }
                         }
                     }
+                    else {
+                        Message innerStanza = decryptMessage(msg, coder, m);
+                        // copy some attributes over
+                        innerStanza.setTo(m.getTo());
+                        innerStanza.setFrom(m.getFrom());
+                        innerStanza.setType(m.getType());
+                        m = innerStanza;
 
-                    catch (Exception exc) {
-                        Log.e(MessageCenterService.TAG, "decryption failed", exc);
-
-                        // raw component for encrypted data
-                        // reuse security flags
-                        msg.clearComponents();
-                        msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
+                        if (!needAck) {
+                            // try the decrypted message
+                            needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
+                        }
                     }
-
                 }
             }
+            catch (Exception exc) {
+                Log.e(MessageCenterService.TAG, "decryption failed", exc);
 
-            else {
-
-                // use message body
+                // raw component for encrypted data
+                // reuse security flags
+                msg.clearComponents();
+                msg.addComponent(new RawComponent(m.toXML().toString().getBytes(), true, msg.getSecurityFlags()));
+                // and body placeholder
                 if (body != null)
                     msg.addComponent(new TextComponent(body));
-
-                // old PGP signature
-                ExtensionElement _pgpSigned = m.getExtension(OpenPGPSignedMessage.ELEMENT_NAME, OpenPGPSignedMessage.NAMESPACE);
-                if (_pgpSigned instanceof OpenPGPSignedMessage) {
-                    OpenPGPSignedMessage pgpSigned = (OpenPGPSignedMessage) _pgpSigned;
-                    byte[] signedData = pgpSigned.getData();
-
-                    // signed message
-                    msg.setSecurityFlags(Coder.SECURITY_BASIC_SIGNED);
-
-                    if (signedData != null) {
-                        // check signature
-                        try {
-                            checkSignedMessage(msg, pgpSigned.getData());
-                            // at this point our message should be filled with the verified body
-                        }
-
-                        catch (Exception exc) {
-                            Log.e(MessageCenterService.TAG, "signature check failed", exc);
-                            // TODO what to do here?
-                            msg.setSecurityFlags(msg.getSecurityFlags() |
-                                Coder.SECURITY_ERROR_INVALID_SIGNATURE);
-                        }
-                    }
-                }
-
             }
 
             // out of band data
@@ -574,46 +641,21 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         sendMessage(ack, storageId);
     }
 
-    private Message decryptMessage(CompositeMessage msg, byte[] encryptedData) throws Exception {
-        // message stanza
-        Message m = null;
-
+    private Message decryptMessage(CompositeMessage msg, Coder coder, Message packet) throws Exception {
         try {
-            Context context = getContext();
-            PersonalKey key = Kontalk.get().getPersonalKey();
-
-            EndpointServer server = getServer();
-            if (server == null)
-                server = Kontalk.get().getEndpointServer();
-
-            Coder coder = Keyring.getDecryptCoder(context, server, key, msg.getSender(true));
-
             // decrypt
-            Coder.DecryptOutput result = coder.decryptText(encryptedData, true);
-
-            String contentText;
-
-            if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(result.mime)) {
-                m = XMPPUtils.parseMessageStanza(result.cleartext);
-
-                if (result.timestamp != null && !checkDriftedDelay(m, result.timestamp))
-                    result.errors.add(new DecryptException(DECRYPT_EXCEPTION_INVALID_TIMESTAMP,
-                        "Drifted timestamp"));
-
-                contentText = m.getBody();
-            }
-            else {
-                contentText = result.cleartext;
-            }
+            Coder.DecryptOutput result = coder.decryptMessage(packet, true);
 
             // clear components (we are adding new ones)
             msg.clearComponents();
             // decrypted text
-            if (contentText != null)
-                msg.addComponent(new TextComponent(contentText));
+            if (result.cleartext != null && result.cleartext.getBody() != null)
+                msg.addComponent(new TextComponent(result.cleartext.getBody()));
+
+            // import security flags from coder
+            msg.setSecurityFlags(result.securityFlags);
 
             if (result.errors.size() > 0) {
-
                 int securityFlags = msg.getSecurityFlags();
 
                 for (DecryptException err : result.errors) {
@@ -654,7 +696,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
 
             msg.setEncrypted(false);
 
-            return m;
+            return result.cleartext;
         }
         catch (Exception exc) {
             // pass over the message even if encrypted
@@ -757,17 +799,17 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         }
     }
 
-    private static boolean checkDriftedDelay(Message m, Date expected) {
-        Date stamp = XMPPUtils.getStanzaDelay(m);
-        if (stamp != null) {
-            long time = stamp.getTime();
-            long now = expected.getTime();
-            long diff = Math.abs(now - time);
-            return (diff < Coder.TIMEDIFF_THRESHOLD);
-        }
+    // methods not used.
 
-        // no timestamp found
-        return true;
+    @Override
+    public void connected(XMPPConnection connection) {
     }
 
+    @Override
+    public void connectionClosed() {
+    }
+
+    @Override
+    public void connectionClosedOnError(Exception e) {
+    }
 }

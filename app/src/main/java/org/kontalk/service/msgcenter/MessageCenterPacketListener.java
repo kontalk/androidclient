@@ -130,43 +130,6 @@ public abstract class MessageCenterPacketListener implements StanzaListener {
         return instance != null && instance.sendMessage(message, databaseId);
     }
 
-    protected void addUploadService(IUploadService service) {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            instance.addUploadService(service);
-    }
-
-    protected void addUploadService(IUploadService service, int priority) {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            instance.addUploadService(service, priority);
-    }
-
-    protected boolean isPushNotificationsEnabled() {
-        MessageCenterService instance = mInstance.get();
-        return instance != null && instance.mPushNotifications;
-    }
-
-    protected void setPushSenderId(String senderId) {
-        MessageCenterService.sPushSenderId = senderId;
-    }
-
-    protected IPushListener getPushListener() {
-        return MessageCenterService.sPushListener;
-    }
-
-    protected void startPushRegistrationCycle() {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            instance.mPushRegistrationCycle = true;
-    }
-
-    protected void pushRegister() {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            instance.pushRegister();
-    }
-
     protected WakefulHashSet<Long> getWaitingReceiptList() {
         MessageCenterService instance = mInstance.get();
         return (instance != null) ? instance.mWaitingReceipt : null;

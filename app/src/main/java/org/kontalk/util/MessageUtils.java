@@ -33,7 +33,9 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jxmpp.jid.Jid;
 import org.bouncycastle.openpgp.PGPException;
 
 import android.content.ContentValues;
@@ -436,7 +438,12 @@ public final class MessageUtils {
             }
 
             else {
-                details.append(res.getString(R.string.security_status_good));
+                if ((securityFlags & Coder.SECURITY_BASIC) != 0) {
+                    details.append(res.getString(R.string.security_status_good));
+                }
+                else if ((securityFlags & Coder.SECURITY_ADVANCED) != 0) {
+                    details.append(res.getString(R.string.security_status_strong));
+                }
             }
 
             details.setSpan(STYLE_BOLD, startPos, details.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -574,11 +581,12 @@ public final class MessageUtils {
         return StringUtils.randomString(30);
     }
 
-    public static File encryptFile(Context context, InputStream in, String[] users)
-            throws GeneralSecurityException, IOException, PGPException {
+    public static File encryptFile(Context context, InputStream in, Jid[] users)
+        throws GeneralSecurityException, IOException, PGPException, SmackException.NotConnectedException {
         PersonalKey key = Kontalk.get().getPersonalKey();
         EndpointServer server = Kontalk.get().getEndpointServer();
-        Coder coder = Keyring.getEncryptCoder(context, server, key, users);
+        // TODO advanced coder not supported yet
+        Coder coder = Keyring.getEncryptCoder(context, Coder.SECURITY_BASIC, null, server, key, users);
         // create a temporary file to store encrypted data
         File temp = File.createTempFile("media", null, context.getCacheDir());
         FileOutputStream out = new FileOutputStream(temp);

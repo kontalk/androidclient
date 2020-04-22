@@ -47,7 +47,7 @@ import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
-import org.kontalk.provider.MyUsers;
+import org.kontalk.provider.Keyring;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.LastActivityEvent;
@@ -139,17 +139,17 @@ public class ContactInfoFragment extends Fragment
                 mTrustStatus.setEnabled(true);
 
                 switch (mContact.getTrustedLevel()) {
-                    case MyUsers.Keys.TRUST_UNKNOWN:
+                    case Keyring.TRUST_UNKNOWN:
                         resId = R.drawable.ic_trust_unknown;
                         textId = R.string.trust_unknown;
                         trustButtonsVisibility = View.VISIBLE;
                         break;
-                    case MyUsers.Keys.TRUST_IGNORED:
+                    case Keyring.TRUST_IGNORED:
                         resId = R.drawable.ic_trust_ignored;
                         textId = R.string.trust_ignored;
                         trustButtonsVisibility = View.VISIBLE;
                         break;
-                    case MyUsers.Keys.TRUST_VERIFIED:
+                    case Keyring.TRUST_VERIFIED:
                         resId = R.drawable.ic_trust_verified;
                         textId = R.string.trust_verified;
                         trustButtonsVisibility = View.GONE;
@@ -385,19 +385,19 @@ public class ContactInfoFragment extends Fragment
         view.findViewById(R.id.btn_ignore).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                trustKey(mContact.getFingerprint(), MyUsers.Keys.TRUST_IGNORED);
+                trustKey(mContact.getFingerprint(), Keyring.TRUST_IGNORED);
             }
         });
         view.findViewById(R.id.btn_refuse).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                trustKey(mContact.getFingerprint(), MyUsers.Keys.TRUST_UNKNOWN);
+                trustKey(mContact.getFingerprint(), Keyring.TRUST_UNKNOWN);
             }
         });
         view.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                trustKey(mContact.getFingerprint(), MyUsers.Keys.TRUST_VERIFIED);
+                trustKey(mContact.getFingerprint(), Keyring.TRUST_VERIFIED);
             }
         });
 

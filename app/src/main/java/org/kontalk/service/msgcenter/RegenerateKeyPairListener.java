@@ -101,7 +101,7 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
                         MyAccount account = Kontalk.get().getDefaultAccount();
 
                         String userId = XMPPUtils.createLocalpart(account.getName());
-                        mKeyRing = key.storeNetwork(userId, getServer().getNetwork(), account.getDisplayName(),
+                        mKeyRing = key.storeNetwork(userId, getServer().getNetwork(),
                             // TODO should we ask passphrase to the user?
                             account.getPassphrase());
 

@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.jivesoftware.smack.packet.Message;
+
 
 /**
  * Generic coder interface.
@@ -40,6 +42,7 @@ public abstract class Coder {
     /** Cleartext messages. Not encrypted nor signed. */
     public static final int SECURITY_CLEARTEXT = 0;
     /** Legacy (2.x) encryption method. For compatibility with old messages. */
+    @Deprecated
     public static final int SECURITY_LEGACY_ENCRYPTED = 1;
     /** Basic encryption (e.g. PGP encrypted). Safe enough. */
     public static final int SECURITY_BASIC_ENCRYPTED = 1 << 1;
@@ -78,17 +81,20 @@ public abstract class Coder {
     /** Basic encryption (e.g. PGP). */
     public static final int SECURITY_BASIC = SECURITY_BASIC_ENCRYPTED | SECURITY_BASIC_SIGNED;
 
+    /** Advanced encryption (e.g. OTR). */
+    public static final int SECURITY_ADVANCED = SECURITY_ADVANCED_ENCRYPTED | SECURITY_ADVANCED_SIGNED;
+
     /** How much time to consider a message timestamp drifted (and thus compromised). */
     public static final long TIMEDIFF_THRESHOLD = TimeUnit.DAYS.toMillis(1);
 
-    /** Encrypts a string. */
-    public abstract byte[] encryptText(CharSequence text) throws GeneralSecurityException;
+    /** Returns the supported security flags for the coder. */
+    public abstract int getSupportedFlags();
 
-    /** Encrypts a stanza. */
-    public abstract byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException;
+    /** Encrypts a message stanza. */
+    public abstract Message encryptMessage(Message message, String placeholder) throws GeneralSecurityException;
 
-    /** Decrypts a byte array which should contain text. */
-    public abstract DecryptOutput decryptText(byte[] encrypted, boolean verify)
+    /** Decrypts a message stanza. */
+    public abstract DecryptOutput decryptMessage(Message message, boolean verify)
         throws GeneralSecurityException;
 
     /** Encrypts a file. */
@@ -113,16 +119,54 @@ public abstract class Coder {
             (securityFlags & SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE) != 0;
     }
 
+    /**
+     * Calculate the common security flags supported by all given users flags.
+     * @param requestedFlags what flags we would like
+     * @param supportedFlags what flags users support
+     * @return calculated flags
+     */
+    public static int getCompatibleSecurityFlags(int requestedFlags, int[] supportedFlags) {
+        // FIXME not really checking flags, but I know what I'm doing here and also I'm lazy
+        int finalFlags = -1;
+        for (int flags : supportedFlags) {
+            if (flags < 0) {
+                // unknown security, just skip it
+                continue;
+            }
+            int calculatedFlags = getCompatibleSecurityFlags(requestedFlags, flags);
+            if (finalFlags >= 0) {
+                finalFlags = Math.min(finalFlags, calculatedFlags);
+            }
+            else {
+                finalFlags = calculatedFlags;
+            }
+        }
+        return finalFlags < 0 ? requestedFlags : finalFlags;
+    }
+
+    /**
+     * Calculate the security flags supported by the given users flags.
+     * @param requestedFlags what flags we would like
+     * @param supportedFlags what flags the user supports
+     * @return calculated flags
+     */
+    public static int getCompatibleSecurityFlags(int requestedFlags, int supportedFlags) {
+        // FIXME not really checking flags, but I know what I'm doing here and also I'm lazy
+        return Math.min(requestedFlags, supportedFlags);
+    }
+
     public static class DecryptOutput {
         public final String mime;
-        public final String cleartext;
+        public final Message cleartext;
         public final Date timestamp;
+        public final int securityFlags;
         public final List<DecryptException> errors;
 
-        DecryptOutput(String cleartext, String mime, Date timestamp, List<DecryptException> errors) {
+        DecryptOutput(Message cleartext, String mime, Date timestamp, int securityFlags, List<DecryptException> errors) {
             this.cleartext = cleartext;
             this.mime = mime;
             this.timestamp = timestamp;
+            this.securityFlags = securityFlags;
             this.errors = errors;
         }
     }

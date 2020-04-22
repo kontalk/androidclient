@@ -72,7 +72,6 @@ import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
-import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.RosterStatusEvent;
 import org.kontalk.service.msgcenter.event.RosterStatusRequest;
@@ -145,7 +144,7 @@ public class GroupInfoFragment extends ListFragment
         mMembersAdapter.clear();
         for (String jid : members) {
             Contact c = Contact.findByUserId(getContext(), jid);
-            if (c.isKeyChanged() || c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN)
+            if (c.isKeyChanged() || c.getTrustedLevel() == Keyring.TRUST_UNKNOWN)
                 showIgnoreAll = true;
             boolean owner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), jid);
             boolean isSelfJid = jid.equalsIgnoreCase(selfJid);
@@ -440,7 +439,7 @@ public class GroupInfoFragment extends ListFragment
         int titleResId = R.string.title_identity;
         String uid;
 
-        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getContext(), jid, MyUsers.Keys.TRUST_UNKNOWN);
+        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getContext(), jid, Keyring.TRUST_UNKNOWN);
         if (publicKey != null) {
             PGPPublicKey pk = PGP.getMasterKey(publicKey);
             String rawFingerprint = PGP.getFingerprint(pk);
@@ -491,14 +490,14 @@ public class GroupInfoFragment extends ListFragment
             int trustedLevel;
             if (c.isKeyChanged()) {
                 // the key has changed and was not trusted yet
-                trustedLevel = MyUsers.Keys.TRUST_UNKNOWN;
+                trustedLevel = Keyring.TRUST_UNKNOWN;
             }
             else {
                 trustedLevel = c.getTrustedLevel();
             }
 
             switch (trustedLevel) {
-                case MyUsers.Keys.TRUST_IGNORED:
+                case Keyring.TRUST_IGNORED:
                     trustStringId = R.string.trust_ignored;
                     trustSpans = new CharacterStyle[] {
                         SystemUtils.getTypefaceSpan(Typeface.BOLD),
@@ -506,7 +505,7 @@ public class GroupInfoFragment extends ListFragment
                     };
                     break;
 
-                case MyUsers.Keys.TRUST_VERIFIED:
+                case Keyring.TRUST_VERIFIED:
                     trustStringId = R.string.trust_verified;
                     trustSpans = new CharacterStyle[] {
                         SystemUtils.getTypefaceSpan(Typeface.BOLD),
@@ -514,7 +513,7 @@ public class GroupInfoFragment extends ListFragment
                     };
                     break;
 
-                case MyUsers.Keys.TRUST_UNKNOWN:
+                case Keyring.TRUST_UNKNOWN:
                 default:
                     trustStringId = R.string.trust_unknown;
                     trustSpans = new CharacterStyle[] {
@@ -550,15 +549,15 @@ public class GroupInfoFragment extends ListFragment
                     switch (which) {
                         case POSITIVE:
                             // trust the key
-                            trustKey(jid, dialogFingerprint, MyUsers.Keys.TRUST_VERIFIED);
+                            trustKey(jid, dialogFingerprint, Keyring.TRUST_VERIFIED);
                             break;
                         case NEUTRAL:
                             // ignore the key
-                            trustKey(jid, dialogFingerprint, MyUsers.Keys.TRUST_IGNORED);
+                            trustKey(jid, dialogFingerprint, Keyring.TRUST_IGNORED);
                             break;
                         case NEGATIVE:
                             // untrust the key
-                            trustKey(jid, dialogFingerprint, MyUsers.Keys.TRUST_UNKNOWN);
+                            trustKey(jid, dialogFingerprint, Keyring.TRUST_UNKNOWN);
                             break;
                     }
                 }
@@ -744,8 +743,8 @@ public class GroupInfoFragment extends ListFragment
                 for (GroupMember m : mMembers) {
                     Contact c = m.contact;
                     String fingerprint = c.getFingerprint();
-                    if (fingerprint != null && (c.isKeyChanged() || c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN)) {
-                        Keyring.setTrustLevel(mContext, c.getJID(), fingerprint, MyUsers.Keys.TRUST_IGNORED);
+                    if (fingerprint != null && (c.isKeyChanged() || c.getTrustedLevel() == Keyring.TRUST_UNKNOWN)) {
+                        Keyring.setTrustLevel(mContext, c.getJID(), fingerprint, Keyring.TRUST_IGNORED);
                         Contact.invalidate(c.getJID());
                     }
                 }

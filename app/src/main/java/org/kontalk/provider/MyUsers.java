@@ -99,10 +99,6 @@ public class MyUsers {
                 .appendPath(fingerprint).build();
         }
 
-        public static final int TRUST_UNKNOWN = 0;
-        public static final int TRUST_IGNORED = 1;
-        public static final int TRUST_VERIFIED = 2;
-
         public static final String INSERT_ONLY = "insertOnly";
     }
 }

@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jxmpp.jid.Jid;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
@@ -34,11 +37,14 @@ import android.database.Cursor;
 import androidx.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
+import org.kontalk.Log;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
+import org.kontalk.crypto.OmemoCoder;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPCoder;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.data.Contact;
 
 
 /**
@@ -46,6 +52,12 @@ import org.kontalk.crypto.PersonalKey;
  * @author Daniele Ricci
  */
 public class Keyring {
+
+    private static final String TAG = Keyring.class.getSimpleName();
+
+    public static final int TRUST_UNKNOWN = 0;
+    public static final int TRUST_IGNORED = 1;
+    public static final int TRUST_VERIFIED = 2;
 
     /**
      * Special value used in the fingerprint column so the first key that comes
@@ -58,29 +70,87 @@ public class Keyring {
     }
 
     /** Returns a {@link Coder} instance for encrypting data. */
-    public static Coder getEncryptCoder(Context context, EndpointServer server, PersonalKey key, String[] recipients) {
-        // get recipients public keys from users database
-        PGPPublicKeyRing[] keys = new PGPPublicKeyRing[recipients.length];
-        for (int i = 0; i < recipients.length; i++) {
-            PGPPublicKeyRing ring = getPublicKey(context, recipients[i], MyUsers.Keys.TRUST_UNKNOWN);
-            if (ring == null)
-                throw new IllegalArgumentException("public key not found for user " + recipients[i]);
+    public static Coder getEncryptCoder(Context context, int securityFlags,
+            XMPPConnection connection, EndpointServer server, PersonalKey key, Jid[] recipients)
+            throws SmackException.NotConnectedException {
 
-            keys[i] = ring;
+        // calculate supported security flags given previous discoveries
+        int[] supportedFlags = Contact.getSecurityFlags(recipients);
+        securityFlags = Coder.getCompatibleSecurityFlags(securityFlags, supportedFlags);
+
+        if ((securityFlags & Coder.SECURITY_ADVANCED) != 0) {
+            try {
+                if (recipients.length == 1 && recipients[0].equals(connection.getUser().asBareJid())) {
+                    throw new IllegalArgumentException("OMEMO with yourself is not supported");
+                }
+                return new OmemoCoder(connection, getTrustedRecipients(context, recipients));
+            }
+            catch (SmackException.NotConnectedException e) {
+                // not connected to the server, notify to the caller
+                // so it can skip the message and let it retry later
+                throw e;
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to setup advanced coder, falling back to basic", e);
+                securityFlags = Coder.SECURITY_BASIC;
+            }
         }
 
-        return new PGPCoder(server, key, keys);
+        // used also as fallback
+        if ((securityFlags & Coder.SECURITY_BASIC) != 0) {
+            // get recipients public keys from users database
+            PGPPublicKeyRing[] keys = new PGPPublicKeyRing[recipients.length];
+            for (int i = 0; i < recipients.length; i++) {
+                PGPPublicKeyRing ring = getPublicKey(context, recipients[i].toString(), Keyring.TRUST_UNKNOWN);
+                if (ring == null)
+                    throw new IllegalArgumentException("public key not found for user " + recipients[i]);
+
+                keys[i] = ring;
+            }
+
+            return new PGPCoder(server, key, keys);
+        }
+
+        else {
+            throw new IllegalArgumentException("Invalid security flags. No Coder found.");
+        }
+    }
+
+    private static OmemoCoder.TrustedRecipient[] getTrustedRecipients(Context context, Jid[] recipients) {
+        OmemoCoder.TrustedRecipient[] trustedRecipients = new OmemoCoder.TrustedRecipient[recipients.length];
+        for (int i = 0; i < recipients.length; i++) {
+            TrustedPublicKeyData keyInfo = getPublicKeyData(context, recipients[i].asBareJid().toString(), TRUST_UNKNOWN);
+            trustedRecipients[i] = new OmemoCoder.TrustedRecipient(recipients[i], keyInfo.trustLevel, keyInfo.manualTrust);
+        }
+        return trustedRecipients;
     }
 
     /** Returns a {@link Coder} instance for decrypting data. */
-    public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
-        PGPPublicKeyRing senderKey = getPublicKey(context, sender, MyUsers.Keys.TRUST_IGNORED);
-        return new PGPCoder(server, key, senderKey);
+    public static Coder getDecryptCoder(Context context, int securityFlags, XMPPConnection connection, EndpointServer server, PersonalKey key, Jid sender) {
+        if ((securityFlags & Coder.SECURITY_ADVANCED) != 0) {
+            try {
+                return new OmemoCoder(connection, sender);
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to setup advanced coder, falling back to basic", e);
+                securityFlags = Coder.SECURITY_BASIC;
+            }
+        }
+
+        // used also as fallback
+        if ((securityFlags & Coder.SECURITY_BASIC) != 0) {
+            PGPPublicKeyRing senderKey = getPublicKey(context, sender.toString(), Keyring.TRUST_IGNORED);
+            return new PGPCoder(server, key, senderKey);
+        }
+
+        else {
+            throw new IllegalArgumentException("Invalid security flags. No Coder found.");
+        }
     }
 
     /** Returns a {@link Coder} instance for verifying data. */
     public static Coder getVerifyCoder(Context context, EndpointServer server, String sender) {
-        PGPPublicKeyRing senderKey = getPublicKey(context, sender, MyUsers.Keys.TRUST_UNKNOWN);
+        PGPPublicKeyRing senderKey = getPublicKey(context, sender, Keyring.TRUST_UNKNOWN);
         return new PGPCoder(server, null, senderKey);
     }
 
@@ -297,18 +367,6 @@ public class Keyring {
         return keys;
     }
 
-    /** Converts a {@link TrustedFingerprint} map to a raw-string trusted fingerprint map. */
-    public static Map<String, String> toTrustedFingerprintMap(Map<String, TrustedFingerprint> props) {
-        Map<String, String> keys = new HashMap<>(props.size());
-        for (Map.Entry<String, TrustedFingerprint> e : props.entrySet()) {
-            TrustedFingerprint fingerprint = e.getValue();
-            if (fingerprint != null) {
-                keys.put(e.getKey(), e.toString());
-            }
-        }
-        return keys;
-    }
-
     public static final class TrustedFingerprint {
         public final String fingerprint;
         public final int trustLevel;
@@ -327,7 +385,7 @@ public class Keyring {
             if (!TextUtils.isEmpty(value)) {
                 String[] parsed = value.split("\\|");
                 String fingerprint = parsed[0];
-                int trustLevel = MyUsers.Keys.TRUST_UNKNOWN;
+                int trustLevel = Keyring.TRUST_UNKNOWN;
                 if (parsed.length > 1) {
                     String _trustLevel = parsed[1];
                     try {

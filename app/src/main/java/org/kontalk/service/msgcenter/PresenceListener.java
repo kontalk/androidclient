@@ -43,7 +43,6 @@ import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderClient;
-import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
@@ -103,7 +102,7 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
 
                     String jid = from.asBareJid().toString();
                     // store key to users table
-                    Keyring.setKey(getContext(), jid, keydata, MyUsers.Keys.TRUST_VERIFIED);
+                    Keyring.setKey(getContext(), jid, keydata, Keyring.TRUST_VERIFIED);
                 }
             }
             catch (Exception e) {
@@ -170,7 +169,7 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
             // insert key if any
             if (publicKey != null) {
                 try {
-                    Keyring.setKey(ctx, fromStr, publicKey, MyUsers.Keys.TRUST_UNKNOWN);
+                    Keyring.setKey(ctx, fromStr, publicKey, Keyring.TRUST_UNKNOWN);
                 }
                 catch (Exception e) {
                     Log.w(TAG, "invalid public key from " + fromStr, e);
@@ -214,7 +213,7 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
                     boolean requestKey = false;
                     String jid = p.getFrom().asBareJid().toString();
                     PGPPublicKeyRing pubRing = Keyring.getPublicKey(getContext(),
-                        jid, MyUsers.Keys.TRUST_UNKNOWN);
+                        jid, Keyring.TRUST_UNKNOWN);
                     if (pubRing != null) {
                         String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(pubRing));
                         if (!newFingerprint.equalsIgnoreCase(oldFingerprint)) {
@@ -243,7 +242,7 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
         String jid = p.getFrom().asBareJid().toString();
 
         Date delayTime;
-        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
+        DelayInformation delay = DelayInformation.from(p);
         if (delay != null) {
             delayTime = delay.getStamp();
         }
@@ -259,7 +258,7 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
         String fingerprint = PublicKeyPresence.getFingerprint(p);
         if (fingerprint == null) {
             // try untrusted fingerprint from database
-            fingerprint = Keyring.getFingerprint(ctx, jid, MyUsers.Keys.TRUST_UNKNOWN);
+            fingerprint = Keyring.getFingerprint(ctx, jid, Keyring.TRUST_UNKNOWN);
         }
 
         // subscription information
@@ -306,7 +305,7 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
 
         // delay
         long timestamp;
-        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
+        DelayInformation delay = DelayInformation.from(p);
         if (delay != null) {
             // delay from presence (rare)
             timestamp = delay.getStamp().getTime();
@@ -320,9 +319,9 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
             values.put(Users.LAST_SEEN, timestamp);
 
         // public key extension (for fingerprint)
-        PublicKeyPresence pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
-        if (pkey != null) {
-            String fingerprint = pkey.getFingerprint();
+        ExtensionElement pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+        if (pkey instanceof PublicKeyPresence) {
+            String fingerprint = ((PublicKeyPresence) pkey).getFingerprint();
             if (fingerprint != null) {
                 // insert new key with empty key data
                 Keyring.setKey(getContext(), jid, fingerprint, new Date());

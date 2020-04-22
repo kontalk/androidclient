@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 public class PGPUserID {
     private static final Pattern PATTERN_UID_FULL = Pattern.compile("^(.*) \\((.*)\\) <(.*)>$");
     private static final Pattern PATTERN_UID_NO_COMMENT = Pattern.compile("^(.*) <(.*)>$");
+    private static final Pattern PATTERN_UID_EMAIL_ONLY = Pattern.compile("^(.*@.*)$");
 
     private final String name;
     private final String comment;
@@ -62,13 +63,19 @@ public class PGPUserID {
 
     @Override
     public String toString() {
-        StringBuilder out = new StringBuilder(name);
+        StringBuilder out = new StringBuilder();
 
-        if (comment != null)
-            out.append(" (").append(comment).append(')');
+        if (name == null && comment == null && email != null) {
+            out.append(email);
+        }
+        else if (name != null) {
+            out.append(name);
+            if (comment != null)
+                out.append(" (").append(comment).append(')');
 
-        if (email != null)
-            out.append(" <").append(email).append('>');
+            if (email != null)
+                out.append(" <").append(email).append('>');
+        }
 
         return out.toString();
     }
@@ -93,6 +100,15 @@ public class PGPUserID {
                 String name = match.group(1);
                 String email = match.group(2);
                 return new PGPUserID(name, null, email);
+            }
+        }
+
+        // try again with email only
+        match = PATTERN_UID_EMAIL_ONLY.matcher(uid);
+        while (match.find()) {
+            if (match.groupCount() >= 1) {
+                String email = match.group(1);
+                return new PGPUserID(null, null, email);
             }
         }
 

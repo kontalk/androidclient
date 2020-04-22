@@ -32,7 +32,6 @@ import android.os.Handler;
 import org.kontalk.Log;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.service.msgcenter.event.UserSubscribedEvent;
 
@@ -78,10 +77,10 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
     public void entriesAdded(Collection<Jid> addresses) {
         final MessageCenterService service = mService.get();
         for (Jid jid : addresses) {
-            if (Keyring.getPublicKey(service, jid.toString(), MyUsers.Keys.TRUST_UNKNOWN) == null) {
+            if (Keyring.getPublicKey(service, jid.toString(), Keyring.TRUST_UNKNOWN) == null) {
                 // autotrust the first key we have
                 // but set the trust level to ignored because we didn't really verify it
-                Keyring.setAutoTrustLevel(service, jid.toString(), MyUsers.Keys.TRUST_IGNORED);
+                Keyring.setAutoTrustLevel(service, jid.toString(), Keyring.TRUST_IGNORED);
             }
         }
     }

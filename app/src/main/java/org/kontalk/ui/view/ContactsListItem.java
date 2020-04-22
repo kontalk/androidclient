@@ -20,7 +20,7 @@ package org.kontalk.ui.view;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
-import org.kontalk.provider.MyUsers;
+import org.kontalk.provider.Keyring;
 import org.kontalk.util.SystemUtils;
 
 import android.annotation.SuppressLint;
@@ -138,13 +138,13 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
             }
             else {
                 switch (contact.getTrustedLevel()) {
-                    case MyUsers.Keys.TRUST_UNKNOWN:
+                    case Keyring.TRUST_UNKNOWN:
                         resId = R.drawable.ic_trust_unknown;
                         break;
-                    case MyUsers.Keys.TRUST_IGNORED:
+                    case Keyring.TRUST_IGNORED:
                         resId = R.drawable.ic_trust_ignored;
                         break;
-                    case MyUsers.Keys.TRUST_VERIFIED:
+                    case Keyring.TRUST_VERIFIED:
                         resId = R.drawable.ic_trust_verified;
                         break;
                     default:
