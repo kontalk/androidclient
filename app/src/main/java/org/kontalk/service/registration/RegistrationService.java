@@ -674,7 +674,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                     disconnect();
                 }
 
-                DataForm response = result.getExtension("x", "jabber:x:data");
+                DataForm response = DataForm.from(result);
                 if (response != null && response.hasField("accept-terms")) {
                     FormField termsUrlField = response.getField("terms");
                     if (termsUrlField != null) {
@@ -838,7 +838,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 disconnect();
             }
 
-            DataForm response = result.getExtension("x", "jabber:x:data");
+            DataForm response = DataForm.from(result);
             if (response != null && response.hasField("accept-terms")) {
                 FormField termsUrlField = response.getField("terms");
                 if (termsUrlField != null) {
@@ -1011,7 +1011,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 disconnect();
             }
 
-            DataForm response = result.getExtension("x", "jabber:x:data");
+            DataForm response = DataForm.from(result);
             if (response != null) {
                 String publicKey = null;
 
@@ -1075,7 +1075,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 disconnect();
             }
 
-            DataForm response = result.getExtension("x", "jabber:x:data");
+            DataForm response = DataForm.from(result);
             if (response != null) {
                 // ok! message will be sent
                 String smsFrom = null, challenge = null,
@@ -1349,42 +1349,39 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
         Form form = new Form(DataForm.Type.submit);
 
-        FormField type = new FormField("FORM_TYPE");
-        type.setType(FormField.Type.hidden);
-        type.addValue(Registration.NAMESPACE);
-        form.addField(type);
+        form.addField(FormField.hiddenFormType(Registration.NAMESPACE));
 
-        FormField phone = new FormField("phone");
-        phone.setType(FormField.Type.text_single);
-        phone.addValue(phoneNumber);
-        form.addField(phone);
+        form.addField(FormField.builder("phone")
+            .setType(FormField.Type.text_single)
+            .addValue(phoneNumber)
+            .build());
 
         if (acceptTerms) {
-            FormField fAcceptTerms = new FormField("accept-terms");
-            fAcceptTerms.setType(FormField.Type.bool);
-            fAcceptTerms.addValue(Boolean.TRUE.toString());
-            form.addField(fAcceptTerms);
+            form.addField(FormField.builder("accept-terms")
+                .setType(FormField.Type.bool)
+                .addValue(Boolean.TRUE.toString())
+                .build());
         }
 
         if (force) {
-            FormField fForce = new FormField("force");
-            fForce.setType(FormField.Type.bool);
-            fForce.addValue(Boolean.TRUE.toString());
-            form.addField(fForce);
+            form.addField(FormField.builder("force")
+                .setType(FormField.Type.bool)
+                .addValue(Boolean.TRUE.toString())
+                .build());
         }
 
         if (fallback) {
-            FormField fFallback = new FormField("fallback");
-            fFallback.setType(FormField.Type.bool);
-            fFallback.addValue(Boolean.TRUE.toString());
-            form.addField(fFallback);
+            form.addField(FormField.builder("fallback")
+                .setType(FormField.Type.bool)
+                .addValue(Boolean.TRUE.toString())
+                .build());
         }
         else {
             // not falling back, ask for our preferred challenge
-            FormField challenge = new FormField("challenge");
-            challenge.setType(FormField.Type.text_single);
-            challenge.addValue(DEFAULT_CHALLENGE);
-            form.addField(challenge);
+            form.addField(FormField.builder("challenge")
+                .setType(FormField.Type.text_single)
+                .addValue(DEFAULT_CHALLENGE)
+                .build());
         }
 
         iq.addExtension(form.getDataFormToSend());
@@ -1397,17 +1394,14 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
         Form form = new Form(DataForm.Type.submit);
 
-        FormField type = new FormField("FORM_TYPE");
-        type.setType(FormField.Type.hidden);
-        type.addValue("http://kontalk.org/protocol/register#code");
-        form.addField(type);
+        form.addField(FormField.hiddenFormType("http://kontalk.org/protocol/register#code"));
 
         if (code != null) {
-            FormField codeField = new FormField("code");
-            codeField.setLabel("Validation code");
-            codeField.setType(FormField.Type.text_single);
-            codeField.addValue(code.toString());
-            form.addField(codeField);
+            form.addField(FormField.builder("code")
+                .setLabel("Validation code")
+                .setType(FormField.Type.text_single)
+                .addValue(code.toString())
+                .build());
         }
 
         iq.addExtension(form.getDataFormToSend());

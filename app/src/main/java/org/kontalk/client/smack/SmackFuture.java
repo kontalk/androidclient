@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2017-2018 Florian Schmaus
+ * Copyright 2017-2020 Florian Schmaus
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ package org.kontalk.client.smack;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.Collection;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -29,10 +31,10 @@ import java.util.logging.Logger;
 
 import javax.net.SocketFactory;
 
-import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.util.CallbackRecipient;
+import org.jivesoftware.smack.util.Consumer;
 import org.jivesoftware.smack.util.ExceptionCallback;
 import org.jivesoftware.smack.util.SuccessCallback;
 
@@ -49,6 +51,8 @@ public abstract class SmackFuture<V, E extends Exception> implements Future<V>, 
     private SuccessCallback<V> successCallback;
 
     private ExceptionCallback<E> exceptionCallback;
+
+    private Consumer<SmackFuture<V, E>> completionCallback;
 
     @Override
     public final synchronized boolean cancel(boolean mayInterruptIfRunning) {
@@ -89,8 +93,13 @@ public abstract class SmackFuture<V, E extends Exception> implements Future<V>, 
         return this;
     }
 
+    public void onCompletion(Consumer<SmackFuture<V, E>> completionCallback) {
+        this.completionCallback = completionCallback;
+        maybeInvokeCallbacks();
+    }
+
     private V getOrThrowExecutionException() throws ExecutionException {
-        assert (result != null || exception != null || cancelled);
+        assert result != null || exception != null || cancelled;
         if (result != null) {
             return result;
         }
@@ -98,7 +107,7 @@ public abstract class SmackFuture<V, E extends Exception> implements Future<V>, 
             throw new ExecutionException(exception);
         }
 
-        assert (cancelled);
+        assert cancelled;
         throw new CancellationException();
     }
 
@@ -150,9 +159,17 @@ public abstract class SmackFuture<V, E extends Exception> implements Future<V>, 
         return getOrThrowExecutionException();
     }
 
+    public V getIfAvailable() {
+        return result;
+    }
+
     protected final synchronized void maybeInvokeCallbacks() {
         if (cancelled) {
             return;
+        }
+
+        if ((result != null || exception != null) && completionCallback != null) {
+            completionCallback.accept(this);
         }
 
         if (result != null && successCallback != null) {
@@ -294,7 +311,7 @@ public abstract class SmackFuture<V, E extends Exception> implements Future<V>, 
      * A simple version of InternalSmackFuture which implements isNonFatalException(E) as always returning
      * <code>false</code> method.
      *
-     * @param <V>
+     * @param <V> the return value of the future.
      */
     public abstract static class SimpleInternalProcessStanzaSmackFuture<V, E extends Exception>
                     extends InternalProcessStanzaSmackFuture<V, E> {
@@ -310,4 +327,12 @@ public abstract class SmackFuture<V, E extends Exception> implements Future<V>, 
         return future;
     }
 
+    public static boolean await(Collection<? extends SmackFuture<?, ?>> futures, long timeout, TimeUnit unit) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(futures.size());
+        for (SmackFuture<?, ?> future : futures) {
+            future.onCompletion(f -> latch.countDown());
+        }
+
+        return latch.await(timeout, unit);
+    }
 }

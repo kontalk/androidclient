@@ -242,7 +242,7 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
         String jid = p.getFrom().asBareJid().toString();
 
         Date delayTime;
-        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
+        DelayInformation delay = DelayInformation.from(p);
         if (delay != null) {
             delayTime = delay.getStamp();
         }
@@ -305,7 +305,7 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
 
         // delay
         long timestamp;
-        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
+        DelayInformation delay = DelayInformation.from(p);
         if (delay != null) {
             // delay from presence (rare)
             timestamp = delay.getStamp().getTime();
@@ -319,9 +319,9 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
             values.put(Users.LAST_SEEN, timestamp);
 
         // public key extension (for fingerprint)
-        PublicKeyPresence pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
-        if (pkey != null) {
-            String fingerprint = pkey.getFingerprint();
+        ExtensionElement pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+        if (pkey instanceof PublicKeyPresence) {
+            String fingerprint = ((PublicKeyPresence) pkey).getFingerprint();
             if (fingerprint != null) {
                 // insert new key with empty key data
                 Keyring.setKey(getContext(), jid, fingerprint, new Date());

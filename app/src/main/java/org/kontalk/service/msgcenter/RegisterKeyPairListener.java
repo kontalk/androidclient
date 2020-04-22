@@ -97,26 +97,25 @@ public abstract class RegisterKeyPairListener extends MessageCenterPacketListene
                 Form form = new Form(DataForm.Type.submit);
 
                 // form type: register#key
-                FormField type = new FormField("FORM_TYPE");
-                type.setType(FormField.Type.hidden);
-                type.addValue("http://kontalk.org/protocol/register#key");
-                form.addField(type);
+                form.addField(FormField.hiddenFormType("http://kontalk.org/protocol/register#key"));
 
                 // new (to-be-signed) public key
-                FormField fieldKey = new FormField("publickey");
-                fieldKey.setLabel("Public key");
-                fieldKey.setType(FormField.Type.text_single);
-                fieldKey.addValue(publicKey);
+                FormField fieldKey = FormField.builder("publickey")
+                    .setLabel("Public key")
+                    .setType(FormField.Type.text_single)
+                    .addValue(publicKey)
+                    .build();
                 form.addField(fieldKey);
 
                 // old (revoked) public key
                 if (mRevoked != null) {
                     String revokedKey = Base64.encodeToString(mRevoked.getEncoded(), Base64.NO_WRAP);
 
-                    FormField fieldRevoked = new FormField("revoked");
-                    fieldRevoked.setLabel("Revoked public key");
-                    fieldRevoked.setType(FormField.Type.text_single);
-                    fieldRevoked.addValue(revokedKey);
+                    FormField fieldRevoked = FormField.builder("revoked")
+                        .setLabel("Revoked public key")
+                        .setType(FormField.Type.text_single)
+                        .addValue(revokedKey)
+                        .build();
                     form.addField(fieldRevoked);
                 }
 
@@ -173,7 +172,7 @@ public abstract class RegisterKeyPairListener extends MessageCenterPacketListene
     public void processStanza(Stanza packet) {
         IQ iq = (IQ) packet;
         if (iq.getType() == IQ.Type.result) {
-            DataForm response = iq.getExtension("x", "jabber:x:data");
+            DataForm response = DataForm.from(iq);
             if (response != null) {
                 String publicKey = null;
 

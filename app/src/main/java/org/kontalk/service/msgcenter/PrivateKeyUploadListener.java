@@ -86,7 +86,7 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
             return;
         }
 
-        DataForm response = iq.getExtension("x", "jabber:x:data");
+        DataForm response = DataForm.from(iq);
         if (response == null) {
             finish(StanzaError.Condition.internal_server_error);
             return;
@@ -133,16 +133,14 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
         Form form = new Form(DataForm.Type.submit);
 
         // form type: register#privatekey
-        FormField type = new FormField("FORM_TYPE");
-        type.setType(FormField.Type.hidden);
-        type.addValue("http://kontalk.org/protocol/register#privatekey");
-        form.addField(type);
+        form.addField(FormField.hiddenFormType("http://kontalk.org/protocol/register#privatekey"));
 
         // private key
-        FormField fieldKey = new FormField("privatekey");
-        fieldKey.setLabel("Private key");
-        fieldKey.setType(FormField.Type.text_single);
-        fieldKey.addValue(privatekey);
+        FormField fieldKey = FormField.builder("privatekey")
+            .setLabel("Private key")
+            .setType(FormField.Type.text_single)
+            .addValue(privatekey)
+            .build();
         form.addField(fieldKey);
 
         iq.addExtension(form.getDataFormToSend());

@@ -28,7 +28,8 @@ import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smackx.iqregister.provider.RegistrationProvider;
 import org.jivesoftware.smackx.iqversion.VersionManager;
-import org.jivesoftware.smackx.omemo.OmemoConfiguration;
+import org.jivesoftware.smackx.omemo.signal.SignalCachingOmemoStore;
+import org.jivesoftware.smackx.omemo.signal.SignalFileBasedOmemoStore;
 import org.jivesoftware.smackx.omemo.signal.SignalOmemoService;
 import org.jivesoftware.smackx.xdata.provider.DataFormProvider;
 import org.minidns.dnsserverlookup.android21.AndroidUsingLinkProperties;
@@ -45,6 +46,8 @@ import org.kontalk.R;
 public class SmackInitializer {
 
     private static boolean sInitialized;
+    // TODO not sure what to do with this for now
+    private static SignalOmemoService sOmemoService;
 
     public static void initialize(Context context) {
         if (!sInitialized) {
@@ -76,8 +79,12 @@ public class SmackInitializer {
             SignalOmemoService.acknowledgeLicense();
             try {
                 SignalOmemoService.setup();
-                OmemoConfiguration.setFileBasedOmemoStoreDefaultPath
-                    (new File(context.getFilesDir(), "omemo"));
+                sOmemoService = (SignalOmemoService) SignalOmemoService.getInstance();
+                sOmemoService.setOmemoStoreBackend(
+                    new SignalCachingOmemoStore(
+                        new SignalFileBasedOmemoStore(new File(context.getFilesDir(), "omemo"))
+                    )
+                );
             }
             catch (Exception e) {
                 // this shouldn't happen, so we just crash for now

@@ -28,13 +28,13 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smackx.carbons.packet.CarbonExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.forward.packet.Forwarded;
 import org.jivesoftware.smackx.omemo.OmemoManager;
+import org.jivesoftware.smackx.omemo.OmemoMessage;
 import org.jivesoftware.smackx.omemo.element.OmemoElement;
-import org.jivesoftware.smackx.omemo.internal.CipherAndAuthTag;
-import org.jivesoftware.smackx.omemo.internal.OmemoMessageInformation;
 import org.jivesoftware.smackx.omemo.listener.OmemoMessageListener;
 import org.jivesoftware.smackx.omemo.util.OmemoConstants;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
@@ -265,10 +265,12 @@ class MessageListener extends WakefulMessageCenterPacketListener implements Conn
      * Process an incoming OMEMO message.
      */
     @Override
-    public void onOmemoMessageReceived(String decryptedBody, Message encryptedMessage, Message wrappingMessage, OmemoMessageInformation omemoInformation) {
+    public void onOmemoMessageReceived(Stanza stanza, OmemoMessage.Received decryptedMessage) {
         // duplicates the message to fool real processing
-        Message output = new Message(encryptedMessage);
-        output.setBody(decryptedBody);
+        Message output = ((Message) stanza).asBuilder()
+            // TODO ignoring other decrypted message information
+            .setBody(decryptedMessage.getBody())
+            .build();
 
         try {
             processWakefulStanza(output);
@@ -278,8 +280,8 @@ class MessageListener extends WakefulMessageCenterPacketListener implements Conn
     }
 
     @Override
-    public void onOmemoKeyTransportReceived(CipherAndAuthTag cipherAndAuthTag, Message message, Message wrappingMessage, OmemoMessageInformation omemoInformation) {
-        // not used for now.
+    public void onOmemoCarbonCopyReceived(CarbonExtension.Direction direction, Message carbonCopy, Message wrappingMessage, OmemoMessage.Received decryptedCarbonCopy) {
+        // TODO will be used one day
     }
 
     /**
@@ -348,7 +350,7 @@ class MessageListener extends WakefulMessageCenterPacketListener implements Conn
                     securityFlags = Coder.SECURITY_BASIC;
                 }
 
-                else if (m.hasExtension(OmemoElement.ENCRYPTED, OmemoConstants.OMEMO_NAMESPACE_V_AXOLOTL)) {
+                else if (m.hasExtension(OmemoElement.NAME_ENCRYPTED, OmemoConstants.OMEMO_NAMESPACE_V_AXOLOTL)) {
                     securityFlags = Coder.SECURITY_ADVANCED;
                 }
 
@@ -431,7 +433,7 @@ class MessageListener extends WakefulMessageCenterPacketListener implements Conn
                 // raw component for encrypted data
                 // reuse security flags
                 msg.clearComponents();
-                msg.addComponent(new RawComponent(m.toXML(null).toString().getBytes(), true, msg.getSecurityFlags()));
+                msg.addComponent(new RawComponent(m.toXML().toString().getBytes(), true, msg.getSecurityFlags()));
                 // and body placeholder
                 if (body != null)
                     msg.addComponent(new TextComponent(body));

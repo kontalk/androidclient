@@ -982,7 +982,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             if (mOmemoManager != null) {
-                mOmemoManager.shutdown();
+                mOmemoManager.stopStanzaAndPEPListeners();
             }
 
             // clear the connection only if we are quitting
@@ -1760,9 +1760,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // ignore OMEMO messages, they will be processed by smack-omemo
                 // except delayed messages which must be processed manually via decrypt()
                 // .......ARGH!!!
-                return stanza instanceof org.jivesoftware.smack.packet.Message &&
+                // FIXME is this still applicable to 4.4.0?
+                return stanza instanceof org.jivesoftware.smack.packet.Message/* &&
                     (!OmemoManager.stanzaContainsOmemoElement(stanza) ||
-                        stanza.hasExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE));
+                        stanza.hasExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE))*/;
             }
         };
         connection.addSyncStanzaListener(new MessageListener(this), filter);
@@ -1873,6 +1874,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (supported) {
             // we logged in so we can now initialize OMEMO
             mOmemoManager = OmemoManager.getInstanceFor(connection);
+            mOmemoManager.resumeStanzaAndPEPListeners();
             try {
                 mOmemoManager.initialize();
             }

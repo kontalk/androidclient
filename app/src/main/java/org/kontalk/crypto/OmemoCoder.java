@@ -18,29 +18,30 @@
 
 package org.kontalk.crypto;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smackx.delay.packet.DelayInformation;
-import org.jivesoftware.smackx.omemo.OmemoFingerprint;
+import org.jivesoftware.smack.packet.MessageBuilder;
+import org.jivesoftware.smackx.omemo.OmemoMessage;
+import org.jivesoftware.smackx.omemo.exceptions.CorruptedOmemoKeyException;
+import org.jivesoftware.smackx.omemo.trust.OmemoFingerprint;
 import org.jivesoftware.smackx.omemo.OmemoManager;
-import org.jivesoftware.smackx.omemo.element.OmemoElement;
 import org.jivesoftware.smackx.omemo.exceptions.CannotEstablishOmemoSessionException;
-import org.jivesoftware.smackx.omemo.exceptions.CryptoFailedException;
 import org.jivesoftware.smackx.omemo.exceptions.UndecidedOmemoIdentityException;
-import org.jivesoftware.smackx.omemo.internal.ClearTextMessage;
 import org.jivesoftware.smackx.omemo.internal.OmemoDevice;
-import org.jivesoftware.smackx.omemo.util.OmemoConstants;
+import org.jivesoftware.smackx.pubsub.PubSubException;
 import org.jivesoftware.smackx.pubsub.packet.PubSub;
 import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
@@ -61,8 +62,13 @@ public class OmemoCoder extends Coder {
     private OmemoManager mManager;
 
     /** For encryption. */
-    public OmemoCoder(XMPPConnection connection, TrustedRecipient[] recipients) throws XMPPException.XMPPErrorException,
-            SmackException.NotConnectedException, InterruptedException, SmackException.NoResponseException {
+    public OmemoCoder(XMPPConnection connection, TrustedRecipient[] recipients)
+            throws XMPPException.XMPPErrorException, SmackException.NotConnectedException,
+            InterruptedException, SmackException.NoResponseException,
+            SmackException.NotLoggedInException, CorruptedOmemoKeyException,
+            IOException, CannotEstablishOmemoSessionException,
+            PubSubException.NotALeafNodeException {
+
         init(connection);
 
         mSender = null;
@@ -128,56 +134,49 @@ public class OmemoCoder extends Coder {
     @Override
     public Message encryptMessage(Message message, String placeholder) throws GeneralSecurityException {
         Message output;
-        ArrayList<BareJid> recipients = new ArrayList(mRecipients.length);
+        Set<BareJid> recipients = new HashSet<>(mRecipients.length);
         for (TrustedRecipient rcpt : mRecipients) {
             recipients.add(rcpt.jid.asBareJid());
         }
 
+        OmemoMessage.Sent sentMessage;
         try {
-            output = mManager.encrypt(recipients, message.getBody());
+            sentMessage = mManager.encrypt(recipients, message.getBody());
         }
         catch (UndecidedOmemoIdentityException e) {
             // TODO experimenting; crash for now
             throw new RuntimeException("Impossible: we should have decided already!", e);
         }
-        catch (CannotEstablishOmemoSessionException e) {
-            try {
-                output = mManager.encryptForExistingSessions(e, message.getBody());
-            }
-            catch (UndecidedOmemoIdentityException e1) {
-                // TODO experimenting; crash for now
-                throw new RuntimeException("Impossible: we should have decided already!", e1);
-            }
-            catch (CryptoFailedException e1) {
-                throw new GeneralSecurityException(e1);
-            }
-        }
         catch (Exception e) {
             throw new GeneralSecurityException(e);
         }
 
-        if (output != null) {
-            output.setBody(placeholder);
-            output.setStanzaId(message.getStanzaId());
-            output.setFrom(message.getFrom());
-            output.setTo(message.getTo());
-            output.setType(message.getType());
-            output.addExtensions(message.getExtensions());
+        if (sentMessage.isMissingRecipients()) {
+            // some devices were skipped for some reason
+            // TODO experimenting; crash for now
+            throw new RuntimeException("some recipients were missed",
+                sentMessage.getSkippedDevices().values().iterator().next());
         }
-
-        return output;
+        else {
+            return sentMessage.buildMessage(MessageBuilder
+                .buildMessage(message.getStanzaId())
+                .ofType(message.getType())
+                .addExtensions(message.getExtensions()), message.getTo());
+        }
     }
 
     /**
-     * For now just here to fool {@link org.jivesoftware.smack.MessageListener}.
+     * For now just here to fool {@link org.kontalk.service.msgcenter.MessageListener}.
      */
     @Override
     public DecryptOutput decryptMessage(Message message, boolean verify) throws GeneralSecurityException {
+        // TODO we need to understand how this is working
+        /*
         if (message.hasExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE)) {
             // offline message - decrypt manually
             ClearTextMessage cleartext;
             try {
-                cleartext = mManager.decrypt(mSender, message);
+                cleartext = mManager.decrypt(mSender, message.getExtension(OmemoElement.NAME_ENCRYPTED, ...));
             }
             catch (Exception e) {
                 throw new GeneralSecurityException("OMEMO decryption failed", e);
@@ -200,9 +199,10 @@ public class OmemoCoder extends Coder {
             return new DecryptOutput(output, "text/plain", new Date(), SECURITY_ADVANCED, Collections.emptyList());
         }
         else {
+         */
             // online message - already decrypted by smack-omemo
             return new DecryptOutput(message, "text/plain", new Date(), SECURITY_ADVANCED, Collections.emptyList());
-        }
+        //}
     }
 
     @Override

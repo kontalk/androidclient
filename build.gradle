@@ -44,7 +44,7 @@ allprojects {
         applicationId = 'org.kontalk'
         versionCode = 463
         versionName = '4.4.0-beta13'
-        minSdkVersion = 16
+        minSdkVersion = 19
         targetSdkVersion = 29
         compileSdkVersion = 29
         smackVersion = project(':client-common-java').smackVersion

@@ -20,10 +20,9 @@ package org.kontalk.upload;
 
 import java.lang.ref.WeakReference;
 
-import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.util.SuccessCallback;
 import org.jxmpp.jid.BareJid;
 
 import org.kontalk.client.HTTPFileUpload;
@@ -57,23 +56,16 @@ public class HTTPFileUploadService implements IUploadService {
     public void getPostUrl(String filename, long size, String mime, final UrlCallback callback) {
         HTTPFileUpload.Request request = new HTTPFileUpload.Request(filename, size, mime);
         request.setTo(mService);
-        try {
-            connection().sendIqWithResponseCallback(request, new StanzaListener() {
+        connection().sendIqRequestAsync(request)
+            .onSuccess(new SuccessCallback<IQ>() {
                 @Override
-                public void processStanza(Stanza packet) throws SmackException.NotConnectedException {
-                    if (packet instanceof HTTPFileUpload.Slot) {
-                        HTTPFileUpload.Slot slot = (HTTPFileUpload.Slot) packet;
+                public void onSuccess(IQ result) {
+                    if (result instanceof HTTPFileUpload.Slot) {
+                        HTTPFileUpload.Slot slot = (HTTPFileUpload.Slot) result;
                         callback.callback(slot.getPutUrl(), slot.getGetUrl());
                     }
                 }
             });
-        }
-        catch (SmackException.NotConnectedException e) {
-            // ignored
-        }
-        catch (InterruptedException e) {
-            // ignored
-        }
     }
 
 }

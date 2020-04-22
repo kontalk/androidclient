@@ -18,7 +18,6 @@
 
 package org.kontalk.util;
 
-import java.io.StringReader;
 import java.util.Collection;
 import java.util.Date;
 
@@ -32,9 +31,7 @@ import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
+import org.jivesoftware.smack.xml.XmlPullParser;
 
 import android.graphics.Color;
 import androidx.annotation.ColorInt;
@@ -50,31 +47,17 @@ public class XMPPUtils {
 
     private XMPPUtils() {}
 
-    private static XmlPullParserFactory _xmlFactory;
-
-    private static XmlPullParser getPullParser(String data) throws XmlPullParserException {
-        if (_xmlFactory == null) {
-            _xmlFactory = XmlPullParserFactory.newInstance();
-            _xmlFactory.setNamespaceAware(true);
-        }
-
-        XmlPullParser parser = _xmlFactory.newPullParser();
-        parser.setInput(new StringReader(data));
-
-        return parser;
-    }
-
     /** Parses a &lt;xmpp&gt;-wrapped message stanza. */
     public static Message parseMessageStanza(String data) throws Exception {
 
-        XmlPullParser parser = getPullParser(data);
+        XmlPullParser parser = XMPPParserUtils.getPullParser(data);
         boolean done = false, in_xmpp = false;
         Message msg = null;
 
         while (!done) {
-            int eventType = parser.next();
+            XmlPullParser.Event eventType = parser.next();
 
-            if (eventType == XmlPullParser.START_TAG) {
+            if (eventType == XmlPullParser.Event.START_ELEMENT) {
 
                 if ("xmpp".equals(parser.getName()))
                     in_xmpp = true;
@@ -84,7 +67,7 @@ public class XMPPUtils {
                 }
             }
 
-            else if (eventType == XmlPullParser.END_TAG) {
+            else if (eventType == XmlPullParser.Event.END_ELEMENT) {
 
                 if ("xmpp".equals(parser.getName()))
                     done = true;

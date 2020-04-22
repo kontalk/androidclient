@@ -155,7 +155,7 @@ public class PGPCoder extends Coder {
 
     @Override
     public Message encryptMessage(Message message, String placeholder) throws GeneralSecurityException {
-        byte[] toMessage = encryptStanza(message.toXML(null));
+        byte[] toMessage = encryptStanza(message.toXML());
 
         org.jivesoftware.smack.packet.Message encMsg =
             new org.jivesoftware.smack.packet.Message(message.getTo(), message.getType());
