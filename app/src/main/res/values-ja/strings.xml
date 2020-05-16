@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
      Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
@@ -14,355 +14,351 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
- -->
-<resources>
-  <string name="app_name">Kontalk</string>
-  <string name="app_description">コミュニティ主導のインスタント メッセージング ネットワーク</string>
-  <string name="service_name">メッセージセンター</string>
-  <string name="authenticator_name">認証サービス</string>
-  <string name="sync_service_name">連絡先を同期</string>
-  <string name="download_service">ダウンロード サービス</string>
-  <string name="yes">はい</string>
-  <string name="no">いいえ</string>
-  <string name="send">送信</string>
-  <string name="menu_compose">作成</string>
-  <string name="menu_delete_all">チャットを削除</string>
-  <string name="menu_search">検索</string>
-  <string name="mykey_activity_title">マイ秘密鍵</string>
-  <string name="menu_settings">設定</string>
-  <string name="menu_offline">オフラインにする</string>
-  <string name="menu_online">オンラインにする</string>
-  <string name="menu_import_key">鍵をインポート</string>
-  <string name="pref_network_settings">ネットワーク</string>
-  <string name="pref_network_uri">マニュアル サーバー アドレス</string>
-  <string name="pref_title_network_uri">サーバーリスト自動管理を上書きします</string>
-  <string name="number_validation_intro1">あなたの名前を入力し、お住まいの国コードを選択し、あなたの携帯電話番号を入力してください。次の指示は、次の画面で提供されます。</string>
-  <string name="number_validation_intro2">この端末で着信またはSMSを受信できない場合は、携帯電話の番号を入力してください。その番号をこの端末に関連付けます。</string>
-  <string name="code_validation_intro">一度この番号で SMS か電話を受け取る必要があります。</string>
-  <string name="code_validation_intro2">あなたが受け取ったか聞いたコードを下に入力してください。</string>
-  <string name="code_validation_intro_manual">あなたが受け取った検証コードを入力してください。検証コードは一度しか使用できないことにご注意ください。</string>
-  <string name="hint_validation_name">あなたの名前</string>
-  <string name="hint_validation_number">あなたの番号</string>
-  <string name="hint_validation_code">検証コード</string>
-  <string name="warn_invalid_number">正しい電話番号を入力してください。</string>
-  <string name="msg_validating_phone">登録を要求中…</string>
-  <string name="msg_initializing">Kontalk ネットワークに登録中…</string>
-  <string name="msg_authenticated">ネットワークに登録しました!</string>
-  <string name="share">共有</string>
-  <string name="resend">再送信</string>
-  <string name="copy_message_text">テキストをコピー</string>
-  <string name="delete_message">メッセージを削除</string>
-  <string name="confirm_delete_all">すべてのチャットを削除</string>
-  <string name="confirm_will_delete_all">すべてのチャットが削除されます。</string>
-  <string name="sending_message">メッセージ送信中…</string>
-  <string name="message_text_copied">メッセージ テキストをコピーしました。</string>
-  <string name="call">呼び出し</string>
-  <string name="view_contact">連絡先を表示</string>
-  <string name="view_conversation">チャットを表示</string>
-  <string name="delete_thread">チャットを削除</string>
-  <string name="confirm_delete_thread">チャットを削除</string>
-  <string name="confirm_will_delete_thread">チャット全体が削除されます。</string>
-  <string name="new_messages">新しいメッセージ</string>
-  <string name="only_one_account_supported">1 つの Kontalk アカウントのみサポートされます。</string>
-  <string name="hint_enter_text">テキストをここに入力してください</string>
-  <string name="hint_type_to_compose">タイプして作成</string>
-  <string name="hint_open_kbd_to_compose">メッセージを作成するためキーボードを開く</string>
-  <string name="view_image">画像を表示</string>
-  <string name="title_message_options">メッセージ オプション</string>
-  <string name="menu_message_details">詳細</string>
-  <string name="title_message_details">メッセージの詳細</string>
-  <string name="message_type_label">タイプ:\u0020</string>
-  <string name="text_message">テキストメッセージ</string>
-  <string name="image_message">画像メッセージ</string>
-  <string name="audio_message">音声メッセージ</string>
-  <string name="from_label">差出人:\u0020</string>
-  <string name="to_address_label">宛先:\u0020</string>
-  <string name="sent_label">送信済:\u0020</string>
-  <string name="received_label">受信済:\u0020</string>
-  <string name="error_label">エラー:\u0020</string>
-  <string name="sending_label">送信中:\u0020</string>
-  <string name="refused_label">受け入れ不可:\u0020</string>
-  <string name="notdelivered_label">配送不可:\u0020</string>
-  <string name="delivered_label">配送済:\u0020</string>
-  <string name="encrypted_label">暗号化済:\u0020</string>
-  <string name="security_label">セキュリティー:\u0020</string>
-  <string name="size_label">サイズ:\u0020</string>
-  <string name="size_unknown">(不明)</string>
-  <string name="title_file_info">ファイル情報</string>
-  <string name="pref_restart_msgcenter">メッセージセンターを再起動</string>
-  <string name="pref_title_restart_msgcenter">Kontalk が正常に動作しない場合に使用します</string>
-  <string name="pref_idle_time">アイドル時に切断</string>
-  <string name="pref_title_idle_time">非アクティブ時に切断するまで待機する時間</string>
-  <string name="pref_wakeup_time">サーバーに再接続</string>
-  <string name="pref_title_wakeup_time">非アクティブの期間後、サーバに再接続する前に待機する時間。プッシュ通知が利用できないか、ネットワーク品質が非常に悪い場合にのみ使用します</string>
-  <string name="pref_maintenance">メンテナンス</string>
-  <string name="pref_regenerate_keypair">秘密鍵を再生成</string>
-  <string name="pref_title_regenerate_keypair">あなたの秘密鍵が侵害されている場合に使用します</string>
-  <string name="pref_regenerate_keypair_confirm">新しい鍵ペアが生成され、あなたのアカウントに割り当てられます。古い鍵は無効になります。</string>
-  <string name="contacts_list_title">連絡先を選択</string>
-  <string name="pref_messaging_settings">メッセージング</string>
-  <string name="pref_privacy_settings">プライバシー</string>
-  <string name="pref_encrypt">メッセージを暗号化</string>
-  <string name="pref_encrypt_userdata">パーソナルデータを暗号化</string>
-  <string name="pref_title_on_encrypt_userdata">ユーザーが電話番号を持っている時のみ、ステータス·メッセージが表示されます</string>
-  <string name="pref_title_off_encrypt_userdata">ステータスメッセージは誰にでも表示されます</string>
-  <string name="pref_auto_accept_subscriptions">自動的に招待を受け入れる</string>
-  <string name="pref_send_typing">タイプ中の通知を送信</string>
-  <string name="pref_hide_presence">存在を隠す</string>
-  <string name="pref_title_on_hide_presence">ユーザーからオンラインとして表示されません</string>
-  <string name="pref_title_off_hide_presence">あなたが最後に接続した時に、ユーザーからオンラインとして表示されます</string>
-  <string name="contact_not_registered">連絡先が Kontalk に登録されていないようです。</string>
-  <string name="error_store_outbox">送信トレイにメッセージを保存できません。メモリーが一杯ではありませんか?</string>
-  <string name="decrypt_message">メッセージを復号化</string>
-  <string name="download_file">ファイルをダウンロード</string>
-  <string name="download_again">再度ダウンロード</string>
-  <string name="download">ダウンロード</string>
-  <string name="download_cancel">ダウンロードをキャンセル</string>
-  <string name="has_draft">下書き</string>
-  <string name="pref_update_server_list">サーバーリストを更新</string>
-  <string name="server_list_last_update">最終更新: %s</string>
-  <string name="pref_title_push_notifications">サーバーがサポートしている場合は、プッシュ通知を使用してください。バッテリーを節約します</string>
-  <string name="pref_push_notifications">プッシュ通知</string>
-  <string name="hint_search_full">メッセージを検索</string>
-  <string name="hint_search_quickbox">メッセージ中のテキスト</string>
-  <string name="title_search">検索: \"%s\"</string>
-  <string name="pref_notification_settings">通知</string>
-  <string name="pref_enable_notifications">通知</string>
-  <string name="pref_title_enable_notifications">ステータスバーにメッセージ通知を表示します</string>
-  <string name="pref_ringtone">着信音を選択</string>
-  <string name="pref_vibrate">振動</string>
-  <string name="pref_title_vibrate">通知時に振動します</string>
-  <string name="confirm_delete_message">メッセージを削除</string>
-  <string name="confirm_will_delete_message">メッセージは削除されます。</string>
-  <string name="err_authentication_failed">検証コードが拒否されました。認証に失敗しました。</string>
-  <string name="err_validation_failed">電話番号の検証に失敗しました。</string>
-  <string name="err_validation_retry_later">試行回数が超過しました。数分間待ってから再度お試しください。</string>
-  <string name="msg_validation_canceled">検証はキャンセルされました。まずSMSを受信してください。</string>
-  <string name="err_validation_error">検証中にエラーが発生しました。後で再度実行してください。</string>
-  <string name="err_validation_network_error">サーバーに接続できません。後で再度実行してください。</string>
-  <string name="err_validation_server_not_supported">選択したサーバーは登録をサポートしていません。設定画面で別のサーバーを設定してください。</string>
-  <string name="text_encrypted">(暗号化)</string>
-  <string name="peer_unknown">(不明)</string>
-  <string name="msg_draft_saved">メッセージは下書きとして保存しました。</string>
-  <string name="send_mime_not_supported">ファイルタイプがサポートされていません。</string>
-  <string name="button_validate">登録</string>
-  <string name="button_validation_register">検証</string>
-  <string name="notify_ticker_download_completed">ダウンロードが完了しました</string>
-  <string name="notify_title_download_completed">ダウンロードが完了しました</string>
-  <string name="notify_text_download_completed">添付のダウンロードが完了しました</string>
-  <string name="notify_ticker_download_error">ダウンロードに失敗しました</string>
-  <string name="notify_title_download_error">ダウンロードエラー</string>
-  <string name="notify_text_download_error">添付のダウンロードに失敗しました</string>
-  <string name="notify_ticker_upload_error">アップロードに失敗しました</string>
-  <string name="notify_title_upload_error">アップロードエラー</string>
-  <string name="notify_text_upload_error">添付のアップロードに失敗しました</string>
-  <string name="title_invalid_number">数字が正しくありません</string>
-  <string name="err_store_message_failed">送信トレイにメッセージを保存することができません。</string>
-  <string name="msg_invalid_number">正しい電話番号を入力してください。</string>
-  <string name="msg_invalid_cc">国を選択してください。</string>
-  <string name="title_invalid_code">コードが正しくありません</string>
-  <string name="msg_invalid_code">正しいコードを入力してください。</string>
-  <string name="title_no_name">あなたの名前</string>
-  <string name="msg_no_name">名前を入力してください。</string>
-  <string name="menu_refresh">更新</string>
-  <string name="menu_invite">ユーザーを招待</string>
-  <string name="title_error">エラー</string>
-  <string name="msg_do_refresh">メニュー &gt; 更新 を使用して、連絡先リストを更新してください。</string>
-  <string name="msg_sync_progress">連絡先リストを更新中…</string>
-  <string name="err_sync_failed">連絡先リストを更新することができません。後で再度実行してください。</string>
-  <string name="err_sync_nonetwork">ネットワークが使用できません。後で再度実行してください。</string>
-  <string name="text_invite_message">Google Play ストアで Kontalk をご覧ください。フリーのメッセージングアプリです!
+ --><resources>
+    <string name="app_name">Kontalk</string>
+    <string name="app_description">コミュニティ主導のインスタント メッセージング ネットワーク</string>
+    <string name="service_name">メッセージセンター</string>
+    <string name="authenticator_name">認証サービス</string>
+    <string name="sync_service_name">連絡先を同期</string>
+    <string name="download_service">ダウンロード サービス</string>
+    <string name="yes">はい</string>
+    <string name="no">いいえ</string>
+    <string name="send">送信</string>
+    <string name="menu_compose">作成</string>
+    <string name="menu_delete_all">チャットを削除</string>
+    <string name="menu_search">検索</string>
+    <string name="mykey_activity_title">マイ秘密鍵</string>
+    <string name="menu_settings">設定</string>
+    <string name="menu_offline">オフラインにする</string>
+    <string name="menu_online">オンラインにする</string>
+    <string name="menu_import_key">鍵をインポート</string>
+    <string name="pref_network_settings">ネットワーク</string>
+    <string name="pref_network_uri">マニュアル サーバー アドレス</string>
+    <string name="pref_title_network_uri">サーバーリスト自動管理を上書きします</string>
+    <string name="number_validation_intro1">あなたの名前を入力し、お住まいの国コードを選択し、あなたの携帯電話番号を入力してください。次の指示は、次の画面で提供されます。</string>
+    <string name="number_validation_intro2">この端末で着信またはSMSを受信できない場合は、携帯電話の番号を入力してください。その番号をこの端末に関連付けます。</string>
+    <string name="code_validation_intro">一度この番号で SMS か電話を受け取る必要があります。</string>
+    <string name="code_validation_intro2">あなたが受け取ったか聞いたコードを下に入力してください。</string>
+    <string name="code_validation_intro_manual">あなたが受け取った検証コードを入力してください。検証コードは一度しか使用できないことにご注意ください。</string>
+    <string name="hint_validation_name">あなたの名前</string>
+    <string name="hint_validation_number">あなたの番号</string>
+    <string name="hint_validation_code">検証コード</string>
+    <string name="warn_invalid_number">正しい電話番号を入力してください。</string>
+    <string name="msg_validating_phone">登録を要求中…</string>
+    <string name="msg_initializing">Kontalk ネットワークに登録中…</string>
+    <string name="msg_authenticated">ネットワークに登録しました!</string>
+    <string name="share">共有</string>
+    <string name="resend">再送信</string>
+    <string name="copy_message_text">テキストをコピー</string>
+    <string name="delete_message">メッセージを削除</string>
+    <string name="confirm_delete_all">すべてのチャットを削除</string>
+    <string name="confirm_will_delete_all">すべてのチャットが削除されます。</string>
+    <string name="sending_message">メッセージ送信中…</string>
+    <string name="message_text_copied">メッセージ テキストをコピーしました。</string>
+    <string name="call">呼び出し</string>
+    <string name="view_contact">連絡先を表示</string>
+    <string name="view_conversation">チャットを表示</string>
+    <string name="delete_thread">チャットを削除</string>
+    <string name="confirm_delete_thread">チャットを削除</string>
+    <string name="confirm_will_delete_thread">チャット全体が削除されます。</string>
+    <string name="new_messages">新しいメッセージ</string>
+    <string name="only_one_account_supported">1 つの Kontalk アカウントのみサポートされます。</string>
+    <string name="hint_enter_text">テキストをここに入力してください</string>
+    <string name="hint_type_to_compose">タイプして作成</string>
+    <string name="hint_open_kbd_to_compose">メッセージを作成するためキーボードを開く</string>
+    <string name="view_image">画像を表示</string>
+    <string name="title_message_options">メッセージ オプション</string>
+    <string name="menu_message_details">詳細</string>
+    <string name="title_message_details">メッセージの詳細</string>
+    <string name="message_type_label">タイプ:\u0020</string>
+    <string name="text_message">テキストメッセージ</string>
+    <string name="image_message">画像メッセージ</string>
+    <string name="audio_message">音声メッセージ</string>
+    <string name="from_label">差出人:\u0020</string>
+    <string name="to_address_label">宛先:\u0020</string>
+    <string name="sent_label">送信済:\u0020</string>
+    <string name="received_label">受信済:\u0020</string>
+    <string name="error_label">エラー:\u0020</string>
+    <string name="sending_label">送信中:\u0020</string>
+    <string name="refused_label">受け入れ不可:\u0020</string>
+    <string name="notdelivered_label">配送不可:\u0020</string>
+    <string name="delivered_label">配送済:\u0020</string>
+    <string name="encrypted_label">暗号化済:\u0020</string>
+    <string name="security_label">セキュリティー:\u0020</string>
+    <string name="size_label">サイズ:\u0020</string>
+    <string name="size_unknown">(不明)</string>
+    <string name="title_file_info">ファイル情報</string>
+    <string name="pref_restart_msgcenter">メッセージセンターを再起動</string>
+    <string name="pref_title_restart_msgcenter">Kontalk が正常に動作しない場合に使用します</string>
+    <string name="pref_idle_time">アイドル時に切断</string>
+    <string name="pref_title_idle_time">非アクティブ時に切断するまで待機する時間</string>
+    <string name="pref_wakeup_time">サーバーに再接続</string>
+    <string name="pref_title_wakeup_time">非アクティブの期間後、サーバに再接続する前に待機する時間。プッシュ通知が利用できないか、ネットワーク品質が非常に悪い場合にのみ使用します</string>
+    <string name="pref_maintenance">メンテナンス</string>
+    <string name="pref_regenerate_keypair">秘密鍵を再生成</string>
+    <string name="pref_title_regenerate_keypair">あなたの秘密鍵が侵害されている場合に使用します</string>
+    <string name="pref_regenerate_keypair_confirm">新しい鍵ペアが生成され、あなたのアカウントに割り当てられます。古い鍵は無効になります。</string>
+    <string name="contacts_list_title">連絡先を選択</string>
+    <string name="pref_messaging_settings">メッセージング</string>
+    <string name="pref_privacy_settings">プライバシー</string>
+    <string name="pref_encrypt">メッセージを暗号化</string>
+    <string name="pref_encrypt_userdata">パーソナルデータを暗号化</string>
+    <string name="pref_title_on_encrypt_userdata">ユーザーが電話番号を持っている時のみ、ステータス·メッセージが表示されます</string>
+    <string name="pref_title_off_encrypt_userdata">ステータスメッセージは誰にでも表示されます</string>
+    <string name="pref_auto_accept_subscriptions">自動的に招待を受け入れる</string>
+    <string name="pref_send_typing">タイプ中の通知を送信</string>
+    <string name="pref_hide_presence">存在を隠す</string>
+    <string name="pref_title_on_hide_presence">ユーザーからオンラインとして表示されません</string>
+    <string name="pref_title_off_hide_presence">あなたが最後に接続した時に、ユーザーからオンラインとして表示されます</string>
+    <string name="contact_not_registered">連絡先が Kontalk に登録されていないようです。</string>
+    <string name="error_store_outbox">送信トレイにメッセージを保存できません。メモリーが一杯ではありませんか?</string>
+    <string name="decrypt_message">メッセージを復号化</string>
+    <string name="download_file">ファイルをダウンロード</string>
+    <string name="download_again">再度ダウンロード</string>
+    <string name="download">ダウンロード</string>
+    <string name="download_cancel">ダウンロードをキャンセル</string>
+    <string name="has_draft">下書き</string>
+    <string name="pref_update_server_list">サーバーリストを更新</string>
+    <string name="server_list_last_update">最終更新: %s</string>
+    <string name="pref_title_push_notifications">サーバーがサポートしている場合は、プッシュ通知を使用してください。バッテリーを節約します</string>
+    <string name="pref_push_notifications">プッシュ通知</string>
+    <string name="hint_search_full">メッセージを検索</string>
+    <string name="hint_search_quickbox">メッセージ中のテキスト</string>
+    <string name="title_search">検索: \"%s\"</string>
+    <string name="pref_notification_settings">通知</string>
+    <string name="pref_enable_notifications">通知</string>
+    <string name="pref_title_enable_notifications">ステータスバーにメッセージ通知を表示します</string>
+    <string name="pref_ringtone">着信音を選択</string>
+    <string name="pref_vibrate">振動</string>
+    <string name="pref_title_vibrate">通知時に振動します</string>
+    <string name="confirm_delete_message">メッセージを削除</string>
+    <string name="confirm_will_delete_message">メッセージは削除されます。</string>
+    <string name="err_authentication_failed">検証コードが拒否されました。認証に失敗しました。</string>
+    <string name="err_validation_failed">電話番号の検証に失敗しました。</string>
+    <string name="err_validation_retry_later">試行回数が超過しました。数分間待ってから再度お試しください。</string>
+    <string name="msg_validation_canceled">検証はキャンセルされました。まずSMSを受信してください。</string>
+    <string name="err_validation_error">検証中にエラーが発生しました。後で再度実行してください。</string>
+    <string name="err_validation_network_error">サーバーに接続できません。後で再度実行してください。</string>
+    <string name="err_validation_server_not_supported">選択したサーバーは登録をサポートしていません。設定画面で別のサーバーを設定してください。</string>
+    <string name="text_encrypted">(暗号化)</string>
+    <string name="peer_unknown">(不明)</string>
+    <string name="msg_draft_saved">メッセージは下書きとして保存しました。</string>
+    <string name="send_mime_not_supported">ファイルタイプがサポートされていません。</string>
+    <string name="button_validate">登録</string>
+    <string name="button_validation_register">検証</string>
+    <string name="notify_ticker_download_completed">ダウンロードが完了しました</string>
+    <string name="notify_title_download_completed">ダウンロードが完了しました</string>
+    <string name="notify_text_download_completed">添付のダウンロードが完了しました</string>
+    <string name="notify_ticker_download_error">ダウンロードに失敗しました</string>
+    <string name="notify_title_download_error">ダウンロードエラー</string>
+    <string name="notify_text_download_error">添付のダウンロードに失敗しました</string>
+    <string name="notify_ticker_upload_error">アップロードに失敗しました</string>
+    <string name="notify_title_upload_error">アップロードエラー</string>
+    <string name="notify_text_upload_error">添付のアップロードに失敗しました</string>
+    <string name="title_invalid_number">数字が正しくありません</string>
+    <string name="err_store_message_failed">送信トレイにメッセージを保存することができません。</string>
+    <string name="msg_invalid_number">正しい電話番号を入力してください。</string>
+    <string name="msg_invalid_cc">国を選択してください。</string>
+    <string name="title_invalid_code">コードが正しくありません</string>
+    <string name="msg_invalid_code">正しいコードを入力してください。</string>
+    <string name="title_no_name">あなたの名前</string>
+    <string name="msg_no_name">名前を入力してください。</string>
+    <string name="menu_refresh">更新</string>
+    <string name="menu_invite">ユーザーを招待</string>
+    <string name="title_error">エラー</string>
+    <string name="msg_do_refresh">メニュー &gt; 更新 を使用して、連絡先リストを更新してください。</string>
+    <string name="msg_sync_progress">連絡先リストを更新中…</string>
+    <string name="err_sync_failed">連絡先リストを更新することができません。後で再度実行してください。</string>
+    <string name="err_sync_nonetwork">ネットワークが使用できません。後で再度実行してください。</string>
+    <string name="text_invite_message">Google Play ストアで Kontalk をご覧ください。フリーのメッセージングアプリです!
 http://kontalk.org/</string>
-  <string name="text_contacts_empty">新しいユーザーは、自動的にこのリストに追加されます。\n\n誰かに招待メッセージを送信するには、<b>メニュー</b> &gt; <b>ユーザーを招待</b> を使用します。</string>
-  <string name="text_conversations_empty">メッセージを書くには、下の <b>新しいメッセージ</b> ボタンを使用します。</string>
-  <string name="notify_ticker_external_storage">外部ストレージが使用できません</string>
-  <string name="notify_text_external_storage">外部ストレージに書き込みできません。</string>
-  <string name="title_user_not_found">ユーザーが見つかりません</string>
-  <string name="message_user_not_found">連絡先は Kontalk に登録されていないようです。とにかく、ユーザーに連絡するか、招待メッセージを送信することができます。</string>
-  <string name="yes_user_not_found">とにかくユーザーに連絡</string>
-  <string name="no_user_not_found">招待を送信</string>
-  <string name="pref_appearance_settings">外観</string>
-  <string name="pref_font_size">フォントサイズ</string>
-  <string name="menu_status">ステータス</string>
-  <string name="menu_attachment">添付</string>
-  <string name="menu_smileys">スマイリー</string>
-  <string name="menu_block_user">ブロック</string>
-  <string name="menu_unblock_user">ブロック解除</string>
-  <string name="vcard_message">vCard メッセージ</string>
-  <string name="open_file">ファイルを開く</string>
-  <string name="open_audio">音声ファイルを再生</string>
-  <string name="msg_msgcenter_restarted">メッセージセンターが再起動されました。</string>
-  <string name="downloading_attachment">添付をダウンロード中…</string>
-  <string name="decrypting_attachment">添付を復号化中…</string>
-  <string name="attachment_download">添付をダウンロード</string>
-  <string name="attachment_upload">添付をアップロード</string>
-  <string name="seen_moment_ago_label">少し前</string>
-  <string name="seen_online_label">アクティブ</string>
-  <string name="seen_typing_label">タイプ中…</string>
-  <string name="invitation_sent_label">招待を保留中</string>
-  <string name="pref_custom_background">背景をカスタマイズ</string>
-  <string name="pref_background_uri">背景</string>
-  <string name="pref_title_background_uri">カスタムの会話の背景画像を設定</string>
-  <string name="err_attachment_corrupted">添付ファイルをダウンロードできません。メッセージが壊れている可能性があります。</string>
-  <string name="serverlist_updating">サーバーリストを更新中…</string>
-  <string name="serverlist_update_error">サーバーリストをダウンロードできません。後で再度実行してください。</string>
-  <string name="serverlist_update_nodata">サーバーリストが見つかりません。</string>
-  <string name="serverlist_update_nonetwork">ネットワークが使用できません。後で再度実行してください。</string>
-  <string name="serverlist_update_offline">オフラインモードが有効になりました。</string>
-  <string name="pref_vibrate_label_always">常に</string>
-  <string name="pref_vibrate_label_silent">サイレント時のみ</string>
-  <string name="pref_vibrate_label_never">なし</string>
-  <string name="pref_fontsize_label_small">小</string>
-  <string name="pref_fontsize_label_medium">中</string>
-  <string name="pref_fontsize_label_large">大</string>
-  <string name="pref_balloon_label_classic">クラッシック</string>
-  <string name="pref_balloon_label_classic_old">クラッシック (旧)</string>
-  <string name="pref_balloon_label_iphone">iPhone</string>
-  <string name="pref_text_enter_label_default">デフォルト</string>
-  <string name="pref_text_enter_label_newline">Enter</string>
-  <string name="pref_text_enter_label_newline_send">送信</string>
-  <string name="pref_image_resize_label_original">オリジナル</string>
-  <string name="pref_image_resize_label_small">小 (0.4MP)</string>
-  <string name="pref_image_resize_label_medium">中 (1.0MP)</string>
-  <string name="pref_image_resize_label_large">大 (2.0MP)</string>
-  <string name="pref_idle_time_label_never">なし</string>
-  <string name="pref_idle_time_label_5m">5 分</string>
-  <string name="pref_idle_time_label_15m">15 分</string>
-  <string name="pref_idle_time_label_30m">30 分</string>
-  <string name="pref_idle_time_label_1h">1 時間</string>
-  <string name="pref_wakeup_time_label_5m">5 分</string>
-  <string name="pref_wakeup_time_label_15m">15 分</string>
-  <string name="pref_wakeup_time_label_30m">30 分</string>
-  <string name="pref_wakeup_time_label_1h">1 時間</string>
-  <string name="pref_wakeup_time_label_3h">3 時間</string>
-  <string name="pref_remove_prefix">ダイヤル プレフィックス</string>
-  <string name="pref_change_passphrase">秘密鍵のパスワードを変更</string>
-  <string name="pref_title_remove_prefix">電話番号を正しく一致させるために、Kontalk 中のいくつかのダイヤル プレフィックスを削除してください</string>
-  <string name="pref_export_keypair">秘密鍵をエクスポート</string>
-  <string name="msg_import_keypair">Kontalk は、外部ストレージの %s から鍵をインポートします。ファイルが存在すること、それが有効なエクスポートされた鍵のアーカイブであることを確認してください。</string>
-  <string name="msg_import_keypair_complete">秘密鍵のインポートが完了しました。</string>
-  <string name="err_import_keypair_failed">秘密鍵のインポートに失敗しました。</string>
-  <string name="title_passphrase">パスワード</string>
-  <string name="msg_status_sending">送信中</string>
-  <string name="msg_status_sent">送信しました</string>
-  <string name="msg_status_notaccepted">拒否されました</string>
-  <string name="msg_status_notdelivered">配送できませんでした</string>
-  <string name="msg_status_delivered">配送しました</string>
-  <string name="msg_status_encrypted">暗号化しました</string>
-  <string name="pref_balloons">チャット吹き出しのテーマ</string>
-  <string name="attachment_picture">ギャラリー</string>
-  <string name="attachment_contact">連絡先</string>
-  <string name="attachment_audio">音声</string>
-  <string name="chooser_send_picture">画像を送信</string>
-  <string name="chooser_error_no_camera">外部ストレージが使用できません。カメラで撮影した画像を取得することができません。</string>
-  <string name="chooser_select_link">アクションを選択</string>
-  <string name="status_activity_title">ステータスメッセージ</string>
-  <string name="hint_status_entry">ステータスメッセージをここにタイプしてください</string>
-  <string name="header_recent_status">最近使用したステータスメッセージ</string>
-  <string name="title_offline_mode_warning">オフラインモード</string>
-  <string name="message_offline_mode_warning">オンラインモードに戻るまで、オフラインモードでは Kontalk はサーバーに接続しません。メッセージを送受信することができなくなります。ユーザーからあなたがオフラインとして表示されます。</string>
-  <string name="warning_offline_mode">オフラインモードが有効です。メッセージは、オンラインに戻った時に送信されます。</string>
-  <string name="going_offline">オフラインにしています。</string>
-  <string name="going_online">オンラインにしています。</string>
-  <string name="pref_other">その他</string>
-  <string name="pref_donate">寄付</string>
-  <string name="pref_about">アプリについて</string>
-  <string name="title_about">アプリについて</string>
-  <string name="title_donation">寄付</string>
-  <string name="title_credits">クレジット</string>
-  <string name="about_version">%1$s (%2$d)</string>
-  <string name="social_twitter">Twitter</string>
-  <string name="social_googleplus">Google Plus</string>
-  <string name="social_facebook">Facebook</string>
-  <string name="social_identica">Identi.ca</string>
-  <string name="donate_text">Kontalk は走り続けるためにお金を必要とします。少しの寄付でもご検討ください。</string>
-  <string name="title_bitcoin_dialog">Bitcoin</string>
-  <string name="text_bitcoin_dialog">Bitcoin アドレス:\n%s</string>
-  <string name="donate_wallet">Google Play</string>
-  <string name="donate_paypal">PayPal</string>
-  <string name="donate_bitcoin">Bitcoin</string>
-  <string name="donate_flattr">Flattr</string>
-  <string name="msg_generating_keypair">バックグラウンドで秘密鍵を生成中。</string>
-  <string name="msg_gen_keypair_complete">秘密鍵の再生成が完了しました。</string>
-  <string name="notify_gen_keypair_ticker">秘密鍵の生成中…</string>
-  <string name="notify_gen_keypair_title">秘密鍵の生成中</string>
-  <string name="notify_gen_keypair_text">正常に動作を続けることができます。</string>
-  <string name="msg_xmpp_upgrading">アップグレード中…</string>
-  <string name="title_no_personal_key">秘密鍵がありません</string>
-  <string name="msg_no_personal_key">(アップグレードしたせいか) 現在秘密鍵が使用できません。秘密鍵を生成しないと、Kontalk ネットワークにログインできません。 Kontalk を閉じて、再度開き、名前を入力してください。</string>
-  <string name="msg_keypair_exported">秘密鍵とログイン証明書を、外部ストレージにエクスポートしました。</string>
-  <string name="security_status_good">グッド</string>
-  <string name="security_status_bad">バッド</string>
-  <string name="security_error_invalid_signature">\u0020(無効な署名)</string>
-  <string name="security_error_invalid_sender">\u0020(無効な送信者)</string>
-  <string name="security_error_invalid_recipient">\u0020(無効な受信者)</string>
-  <string name="security_error_invalid_timestamp">\u0020(無効なタイムスタンプ)</string>
-  <string name="security_error_invalid_data">\u0020(無効なデータ)</string>
-  <string name="security_error_decrypt_failed">\u0020(復号化失敗)</string>
-  <string name="security_error_integrity_check">\u0020(整合性チェック)</string>
-  <string name="security_error_public_key_unavail">\u0020(無効な公開鍵)</string>
-  <string name="invite_notification">があなたをチャットに招待しています</string>
-  <string name="title_invitation">チャット招待</string>
-  <string name="text_invitation1">リクエスト者:</string>
-  <string name="text_invitation2">フィンガープリント:</string>
-  <string name="button_accept">受け入れ</string>
-  <string name="button_block">ブロック</string>
-  <string name="button_identity">識別</string>
-  <string name="msg_connecting_iab">Google Play に接続中…</string>
-  <string name="msg_iab_thankyou">ありがとうございます!</string>
-  <string name="msg_iab_thankyou_warning">何か問題がありましたが、寄付を頂きました。ありがとうございます!</string>
-  <string name="iab_error_setup">アプリ内課金の設定中にエラー (%d)</string>
-  <string name="iab_error_query">アプリ内課金インベントリーの問合せに失敗しました (%d)</string>
-  <string name="copy_clipboard">クリップボードにコピー</string>
-  <string name="bitcoin_clipboard_copied">Bitcoin のアドレスをクリップボードにコピーしました。</string>
-  <string name="warn_no_personal_key">秘密鍵を読み込みできません。とにかくメッセージを送信するためは、設定から暗号化を無効にしてください。</string>
-  <string name="warn_no_public_key">このユーザーの公開鍵が見つかりません。とにかくメッセージを送信するためには、連絡先リストを更新するか、設定から暗号化を無効にしてみてください。</string>
-  <string name="warn_encryption_failed">メッセージを暗号化できません。とにかくメッセージを送信するためには、設定から暗号化を無効にしてください。</string>
-  <string name="warn_not_subscribed">メッセージを送信できません。ユーザーがまだ招待を承認していません。</string>
-  <string name="pref_sync_sim_contacts">SIM の連絡先から同期</string>
-  <string name="pref_sync_invisible_contacts">不可視の連絡先を含める</string>
-  <string name="pref_accept_any_certificate">すべてのSSL証明書を受け入れる</string>
-  <string name="pref_delete_account">あなたのアカウントを削除</string>
-  <string name="msg_delete_account">あなたのアカウントを削除すると、あなたのメッセージがすべて削除されます。サーバー上のアカウントは、数週間後に自動的に削除されます。</string>
-  <string name="msg_delete_account_progress">あなたのアカウントを削除中…</string>
-  <string name="msg_user_blocked">ユーザーはブロックされています。</string>
-  <string name="msg_user_unblocked">ユーザーはブロック解除されています。</string>
-  <string name="msg_block_user_warning">このユーザーをブロックしようとしています。この場合、このユーザーはあなたがブロックを解除するまで、あなたにすべてのメッセージやメディアを送信することができません。このユーザーは、あなたのステータスや最後の既知の存在を参照することができなくなり、あなたも彼/彼女のステータスを見ることができなくなります。副作用として、彼/彼女にすべてのメッセージやメディアを送信することができなくなります。</string>
-  <string name="msg_unblock_user_warning">このユーザーのブロックを解除しようとしています。ブロック解除すると、彼/彼女があなたにメッセージを送信したり、あなたのステータスや最後の既知の存在を参照することができるようになります。</string>
-  <string name="notification_text_more">さらに詳細はここをタップ</string>
-  <string name="title_auth_error">認証エラー</string>
-  <string name="msg_auth_error">前回接続しようとした時に、Kontalk サーバーへの認証が失敗しました。一時的なサーバーの障害か、サーバーがあなたの秘密鍵を拒否している可能性があります。Android のシステム設定からあなたの Kontalk アカウントを削除して、再度登録することをお勧めします (すべての Kontalk メッセージを失うことになります)。</string>
-  <string name="warn_invite_no_app">ユーザーを招待するために利用可能なアプリケーションはありません。</string>
-  <string name="pref_text_enter">Enter ボタン</string>
-  <string name="pref_title_text_enter">キーボードの Enter ボタンの動作を選択してください</string>
-  <string name="title_password1">パスワード:</string>
-  <string name="title_password2">パスワードを確認:</string>
-  <string name="err_password_too_short">パスワードは少なくとも %d 文字で入力してください。</string>
-  <string name="err_passwords_mismatch">パスワードが一致しません!</string>
-  <string name="err_password_invalid">パスワードが間違っています。</string>
-  <string name="hint_record">マイクをタップすると録音を開始します。</string>
-  <string name="err_change_passphrase">秘密鍵のパスワードを変更できません。</string>
-  <string name="err_file_not_found">ファイルが見つかりません。</string>
-  <string name="err_audio_record">音声の録音開始時にエラー。</string>
-  <string name="err_audio_record_writing">外部ストレージに書き込み中にエラー。</string>
-  <string name="err_playing_audio">音声の再生時にエラー。</string>
-  <string name="err_playing_sdcard">外部ストレージから読み込み中にエラー。</string>
-  <string name="slide_to_cancel">スライドするとキャンセル</string>
-  <string name="pref_media_settings">メディア</string>
-  <string name="pref_image_resize">画像のサイズ変更</string>
-  <string name="err_server_invalid_format">アドレスの形式が正しくありません。</string>
-  <string name="err_no_contacts_app">連絡先のアプリが見つかりません。</string>
-<string name="title_user_exists">ユーザーが存在します</string>
+    <string name="text_contacts_empty">新しいユーザーは、自動的にこのリストに追加されます。\n\n誰かに招待メッセージを送信するには、<b>メニュー</b> &gt; <b>ユーザーを招待</b> を使用します。</string>
+    <string name="text_conversations_empty">メッセージを書くには、下の <b>新しいメッセージ</b> ボタンを使用します。</string>
+    <string name="notify_ticker_external_storage">外部ストレージが使用できません</string>
+    <string name="notify_text_external_storage">外部ストレージに書き込みできません。</string>
+    <string name="title_user_not_found">ユーザーが見つかりません</string>
+    <string name="message_user_not_found">連絡先は Kontalk に登録されていないようです。とにかく、ユーザーに連絡するか、招待メッセージを送信することができます。</string>
+    <string name="yes_user_not_found">とにかくユーザーに連絡</string>
+    <string name="no_user_not_found">招待を送信</string>
+    <string name="pref_appearance_settings">外観</string>
+    <string name="pref_font_size">フォントサイズ</string>
+    <string name="menu_status">ステータス</string>
+    <string name="menu_attachment">添付</string>
+    <string name="menu_smileys">スマイリー</string>
+    <string name="menu_block_user">ブロック</string>
+    <string name="menu_unblock_user">ブロック解除</string>
+    <string name="vcard_message">vCard メッセージ</string>
+    <string name="open_file">ファイルを開く</string>
+    <string name="open_audio">音声ファイルを再生</string>
+    <string name="msg_msgcenter_restarted">メッセージセンターが再起動されました。</string>
+    <string name="downloading_attachment">添付をダウンロード中…</string>
+    <string name="decrypting_attachment">添付を復号化中…</string>
+    <string name="attachment_download">添付をダウンロード</string>
+    <string name="attachment_upload">添付をアップロード</string>
+    <string name="seen_moment_ago_label">少し前</string>
+    <string name="seen_online_label">アクティブ</string>
+    <string name="seen_typing_label">タイプ中…</string>
+    <string name="invitation_sent_label">招待を保留中</string>
+    <string name="pref_custom_background">背景をカスタマイズ</string>
+    <string name="pref_background_uri">背景</string>
+    <string name="pref_title_background_uri">カスタムの会話の背景画像を設定</string>
+    <string name="err_attachment_corrupted">添付ファイルをダウンロードできません。メッセージが壊れている可能性があります。</string>
+    <string name="serverlist_updating">サーバーリストを更新中…</string>
+    <string name="serverlist_update_error">サーバーリストをダウンロードできません。後で再度実行してください。</string>
+    <string name="serverlist_update_nodata">サーバーリストが見つかりません。</string>
+    <string name="serverlist_update_nonetwork">ネットワークが使用できません。後で再度実行してください。</string>
+    <string name="serverlist_update_offline">オフラインモードが有効になりました。</string>
+    <string name="pref_vibrate_label_always">常に</string>
+    <string name="pref_vibrate_label_silent">サイレント時のみ</string>
+    <string name="pref_vibrate_label_never">なし</string>
+    <string name="pref_fontsize_label_small">小</string>
+    <string name="pref_fontsize_label_medium">中</string>
+    <string name="pref_fontsize_label_large">大</string>
+    <string name="pref_balloon_label_classic">クラッシック</string>
+    <string name="pref_balloon_label_classic_old">クラッシック (旧)</string>
+    <string name="pref_balloon_label_iphone">iPhone</string>
+    <string name="pref_text_enter_label_default">デフォルト</string>
+    <string name="pref_text_enter_label_newline">Enter</string>
+    <string name="pref_text_enter_label_newline_send">送信</string>
+    <string name="pref_image_resize_label_original">オリジナル</string>
+    <string name="pref_image_resize_label_small">小 (0.4MP)</string>
+    <string name="pref_image_resize_label_medium">中 (1.0MP)</string>
+    <string name="pref_image_resize_label_large">大 (2.0MP)</string>
+    <string name="pref_idle_time_label_never">なし</string>
+    <string name="pref_idle_time_label_5m">5 分</string>
+    <string name="pref_idle_time_label_15m">15 分</string>
+    <string name="pref_idle_time_label_30m">30 分</string>
+    <string name="pref_idle_time_label_1h">1 時間</string>
+    <string name="pref_wakeup_time_label_5m">5 分</string>
+    <string name="pref_wakeup_time_label_15m">15 分</string>
+    <string name="pref_wakeup_time_label_30m">30 分</string>
+    <string name="pref_wakeup_time_label_1h">1 時間</string>
+    <string name="pref_wakeup_time_label_3h">3 時間</string>
+    <string name="pref_remove_prefix">ダイヤル プレフィックス</string>
+    <string name="pref_change_passphrase">秘密鍵のパスワードを変更</string>
+    <string name="pref_title_remove_prefix">電話番号を正しく一致させるために、Kontalk 中のいくつかのダイヤル プレフィックスを削除してください</string>
+    <string name="pref_export_keypair">秘密鍵をエクスポート</string>
+    <string name="msg_import_keypair">Kontalk は、外部ストレージの %s から鍵をインポートします。ファイルが存在すること、それが有効なエクスポートされた鍵のアーカイブであることを確認してください。</string>
+    <string name="msg_import_keypair_complete">秘密鍵のインポートが完了しました。</string>
+    <string name="err_import_keypair_failed">秘密鍵のインポートに失敗しました。</string>
+    <string name="title_passphrase">パスワード</string>
+    <string name="msg_status_sending">送信中</string>
+    <string name="msg_status_sent">送信しました</string>
+    <string name="msg_status_notaccepted">拒否されました</string>
+    <string name="msg_status_notdelivered">配送できませんでした</string>
+    <string name="msg_status_delivered">配送しました</string>
+    <string name="msg_status_encrypted">暗号化しました</string>
+    <string name="pref_balloons">チャット吹き出しのテーマ</string>
+    <string name="attachment_picture">ギャラリー</string>
+    <string name="attachment_contact">連絡先</string>
+    <string name="attachment_audio">音声</string>
+    <string name="chooser_send_picture">画像を送信</string>
+    <string name="chooser_error_no_camera">画像ファイルを書き込みできません。カメラで撮影することができません。</string>
+    <string name="chooser_select_link">アクションを選択</string>
+    <string name="status_activity_title">ステータスメッセージ</string>
+    <string name="hint_status_entry">ステータスメッセージをここにタイプしてください</string>
+    <string name="header_recent_status">最近使用したステータスメッセージ</string>
+    <string name="title_offline_mode_warning">オフラインモード</string>
+    <string name="message_offline_mode_warning">オンラインモードに戻るまで、オフラインモードでは Kontalk はサーバーに接続しません。メッセージを送受信することができなくなります。ユーザーからあなたがオフラインとして表示されます。</string>
+    <string name="warning_offline_mode">オフラインモードが有効です。メッセージは、オンラインに戻った時に送信されます。</string>
+    <string name="going_offline">オフラインにしています。</string>
+    <string name="going_online">オンラインにしています。</string>
+    <string name="pref_other">その他</string>
+    <string name="pref_donate">寄付</string>
+    <string name="pref_about">アプリについて</string>
+    <string name="title_about">アプリについて</string>
+    <string name="title_donation">寄付</string>
+    <string name="title_credits">クレジット</string>
+    <string name="about_version">%1$s (%2$d)</string>
+    <string name="social_twitter">Twitter</string>
+    <string name="social_googleplus">Google Plus</string>
+    <string name="social_facebook">Facebook</string>
+    <string name="social_identica">Identi.ca</string>
+    <string name="donate_text">Kontalk は走り続けるためにお金を必要とします。少しの寄付でもご検討ください。</string>
+    <string name="title_bitcoin_dialog">Bitcoin</string>
+    <string name="text_bitcoin_dialog">Bitcoin アドレス:\n%s</string>
+    <string name="donate_wallet">Google Play</string>
+    <string name="donate_paypal">PayPal</string>
+    <string name="donate_bitcoin">Bitcoin</string>
+    <string name="donate_flattr">Flattr</string>
+    <string name="msg_generating_keypair">バックグラウンドで秘密鍵を生成中。</string>
+    <string name="msg_gen_keypair_complete">秘密鍵の再生成が完了しました。</string>
+    <string name="notify_gen_keypair_ticker">秘密鍵の生成中…</string>
+    <string name="notify_gen_keypair_title">秘密鍵の生成中</string>
+    <string name="notify_gen_keypair_text">正常に動作を続けることができます。</string>
+    <string name="msg_xmpp_upgrading">アップグレード中…</string>
+    <string name="title_no_personal_key">秘密鍵がありません</string>
+    <string name="msg_no_personal_key">(アップグレードしたせいか) 現在秘密鍵が使用できません。秘密鍵を生成しないと、Kontalk ネットワークにログインできません。 Kontalk を閉じて、再度開き、名前を入力してください。</string>
+    <string name="msg_keypair_exported">秘密鍵とログイン証明書を、外部ストレージにエクスポートしました。</string>
+    <string name="security_status_good">グッド</string>
+    <string name="security_status_bad">バッド</string>
+    <string name="security_error_invalid_signature">\u0020(無効な署名)</string>
+    <string name="security_error_invalid_sender">\u0020(無効な送信者)</string>
+    <string name="security_error_invalid_recipient">\u0020(無効な受信者)</string>
+    <string name="security_error_invalid_timestamp">\u0020(無効なタイムスタンプ)</string>
+    <string name="security_error_invalid_data">\u0020(無効なデータ)</string>
+    <string name="security_error_decrypt_failed">\u0020(復号化失敗)</string>
+    <string name="security_error_integrity_check">\u0020(整合性チェック)</string>
+    <string name="security_error_public_key_unavail">\u0020(無効な公開鍵)</string>
+    <string name="invite_notification">があなたをチャットに招待しています</string>
+    <string name="title_invitation">チャット招待</string>
+    <string name="text_invitation1">リクエスト者:</string>
+    <string name="text_invitation2">フィンガープリント:</string>
+    <string name="button_accept">受け入れ</string>
+    <string name="button_block">ブロック</string>
+    <string name="button_identity">識別</string>
+    <string name="msg_connecting_iab">Google Play に接続中…</string>
+    <string name="msg_iab_thankyou">ありがとうございます!</string>
+    <string name="msg_iab_thankyou_warning">何か問題がありましたが、寄付を頂きました。ありがとうございます!</string>
+    <string name="iab_error_setup">アプリ内課金の設定中にエラー (%d)</string>
+    <string name="iab_error_query">アプリ内課金インベントリーの問合せに失敗しました (%d)</string>
+    <string name="copy_clipboard">クリップボードにコピー</string>
+    <string name="bitcoin_clipboard_copied">Bitcoin のアドレスをクリップボードにコピーしました。</string>
+    <string name="warn_no_personal_key">秘密鍵を読み込みできません。とにかくメッセージを送信するためは、設定から暗号化を無効にしてください。</string>
+    <string name="warn_no_public_key">このユーザーの公開鍵が見つかりません。とにかくメッセージを送信するためには、連絡先リストを更新するか、設定から暗号化を無効にしてみてください。</string>
+    <string name="warn_encryption_failed">メッセージを暗号化できません。とにかくメッセージを送信するためには、設定から暗号化を無効にしてください。</string>
+    <string name="warn_not_subscribed">メッセージを送信できません。ユーザーがまだ招待を承認していません。</string>
+    <string name="pref_sync_sim_contacts">SIM の連絡先から同期</string>
+    <string name="pref_sync_invisible_contacts">不可視の連絡先を含める</string>
+    <string name="pref_accept_any_certificate">すべてのSSL証明書を受け入れる</string>
+    <string name="pref_delete_account">あなたのアカウントを削除</string>
+    <string name="msg_delete_account">あなたのアカウントを削除すると、あなたのメッセージがすべて削除されます。サーバー上のアカウントは、数週間後に自動的に削除されます。</string>
+    <string name="msg_delete_account_progress">あなたのアカウントを削除中…</string>
+    <string name="msg_user_blocked">ユーザーはブロックされています。</string>
+    <string name="msg_user_unblocked">ユーザーはブロック解除されています。</string>
+    <string name="msg_block_user_warning">このユーザーをブロックしようとしています。この場合、このユーザーはあなたがブロックを解除するまで、あなたにすべてのメッセージやメディアを送信することができません。このユーザーは、あなたのステータスや最後の既知の存在を参照することができなくなり、あなたも彼/彼女のステータスを見ることができなくなります。副作用として、彼/彼女にすべてのメッセージやメディアを送信することができなくなります。</string>
+    <string name="msg_unblock_user_warning">このユーザーのブロックを解除しようとしています。ブロック解除すると、彼/彼女があなたにメッセージを送信したり、あなたのステータスや最後の既知の存在を参照することができるようになります。</string>
+    <string name="notification_text_more">さらに詳細はここをタップ</string>
+    <string name="title_auth_error">認証エラー</string>
+    <string name="msg_auth_error">前回接続しようとした時に、Kontalk サーバーへの認証が失敗しました。一時的なサーバーの障害か、サーバーがあなたの秘密鍵を拒否している可能性があります。Android のシステム設定からあなたの Kontalk アカウントを削除して、再度登録することをお勧めします (すべての Kontalk メッセージを失うことになります)。</string>
+    <string name="warn_invite_no_app">ユーザーを招待するために利用可能なアプリケーションはありません。</string>
+    <string name="pref_text_enter">Enter ボタン</string>
+    <string name="pref_title_text_enter">キーボードの Enter ボタンの動作を選択してください</string>
+    <string name="title_password1">パスワード:</string>
+    <string name="title_password2">パスワードを確認:</string>
+    <string name="err_password_too_short">パスワードは少なくとも %d 文字で入力してください。</string>
+    <string name="err_passwords_mismatch">パスワードが一致しません!</string>
+    <string name="err_password_invalid">パスワードが間違っています。</string>
+    <string name="hint_record">マイクをタップすると録音を開始します。</string>
+    <string name="err_change_passphrase">秘密鍵のパスワードを変更できません。</string>
+    <string name="err_file_not_found">ファイルが見つかりません。</string>
+    <string name="err_audio_record">音声の録音開始時にエラー。</string>
+    <string name="err_audio_record_writing">外部ストレージに書き込み中にエラー。</string>
+    <string name="err_playing_audio">音声の再生時にエラー。</string>
+    <string name="err_playing_sdcard">外部ストレージから読み込み中にエラー。</string>
+    <string name="slide_to_cancel">スライドするとキャンセル</string>
+    <string name="pref_media_settings">メディア</string>
+    <string name="pref_image_resize">画像のサイズ変更</string>
+    <string name="err_server_invalid_format">アドレスの形式が正しくありません。</string>
+    <string name="err_no_contacts_app">連絡先のアプリが見つかりません。</string>
+    <string name="title_user_exists">ユーザーが存在します</string>
     <string name="err_validation_user_exists"><b>使用している番号はすでにKontalkに登録されています。</b>別のデバイスで登録している場合、この方法では Kontalk から遮断されます。別のデバイスを登録する場合は、転送アカウントを選択してください。</string>
     <string name="warning_user_blocked">あなたがこのユーザーをブロックしました。</string>
-
     <string name="about_credits_devteam"><b>Kontalk の提供:</b></string>
     <string name="about_credits_gfx"><b>グラフィックス/アイコン</b></string>
     <string name="about_credits_translators"><b>翻訳者</b></string>
-
-<string name="pref_help">ヘルプ</string>
+    <string name="pref_help">ヘルプ</string>
     <string name="err_no_contact">連絡先がみつかりません。</string>
-
     <string name="warning_older_version">あなたの相手は古いバージョンの Kontalk を使用しています。一部の機能が正常に動作しない場合があります。</string>
     <string name="error_delete_thread">スレッドを削除できません。</string>
     <string name="error_delete_message">メッセージを削除できません。</string>
@@ -384,8 +380,7 @@ http://kontalk.org/</string>
     <string name="title_block_user_warning">このユーザーをブロックしてもよろしいですか?</string>
     <string name="title_unblock_user_warning">このユーザーのブロックを解除してもよろしいですか?</string>
     <string name="warning_button_details">詳細</string>
-
-<string name="title_confirm_cancel_registration">登録をキャンセルしますか?</string>
+    <string name="title_confirm_cancel_registration">登録をキャンセルしますか?</string>
     <string name="confirm_cancel_registration">戻る場合は、登録を最初から開始する必要があります。別のアプリに切り替える必要がある場合は、デバイスのホームボタンを使用するだけです。</string>
     <string name="app_name_offline">Kontalk (オフライン)</string>
     <string name="mark_read">既読</string>
@@ -399,33 +394,24 @@ http://kontalk.org/</string>
     <string name="attachment_file">ファイル</string>
     <string name="attachment_vcard">連絡先</string>
     <string name="attachment_location">場所</string>
-
     <string name="msg_not_implemented">まだ実装されていません。</string>
-
     <string name="chooser_error_no_camera_app">カメラアプリが利用できません。</string>
-
     <string name="err_keypair_export_write">外部ストレージに秘密鍵を書き込みできません。</string>
     <string name="err_keypair_export_other">秘密鍵をエクスポートできません。</string>
-
     <string name="pref_title_sync_sim_contacts">登録済のユーザーを確認するときに SIM の連絡先を含める</string>
-
-    <string name="pref_title_sync_invisible_contacts">連絡先アプリに表示されない連絡先を含めます。DAVDroid を使用する場合に有効にします</string>
-
+    <string name="pref_title_sync_invisible_contacts">連絡先アプリに表示されない連絡先を含めます。DAVx⁵ その他の連絡先同期アプリを使用する場合に有効にします</string>
     <string name="warning_public_key_changed">秘密鍵が変更されました</string>
     <string name="title_public_key_changed_warning">秘密鍵が変更されました</string>
     <string name="msg_public_key_changed_warning">ユーザーに、彼/彼女の Kontalk を再インストールしたり、意図的に鍵を再生成したか、確認してください。そうでなければ通信が侵害される可能性があります!</string>
     <string name="warning_public_key_unknown">秘密鍵は検証されていません</string>
     <string name="title_public_key_unknown_warning">秘密鍵を検証</string>
     <string name="msg_public_key_unknown_warning">ユーザーに、彼/彼女のフィンガープリントが <b>識別</b> のダイアログに表示されたものと一致するか確認してください。そうでなければ通信が侵害される可能性があります!</string>
-
     <string name="pref_show_blocked_users">ブロックされたユーザーを表示</string>
     <string name="button_load_next_page">さらにメッセージを読み込む</string>
-
     <plurals name="unread_messages">
-	<item quantity="other">%d 未読メッセージ</item>
-</plurals>
-
-<string name="menu_create_group">グループを作成</string>
+        <item quantity="other">%d 未読メッセージ</item>
+    </plurals>
+    <string name="menu_create_group">グループを作成</string>
     <string name="code_validation_intro_callerid">下のボタンをタップして、その電話番号に不在着信してください。 <b>登録している電話番号から通話を開始する必要があります</b>。 最初の呼び出し音が聞こえてすぐに電話を切ると、通話は無料です。 私たちにとってそれで十分です。</string>
     <string name="code_validation_intro2_callerid">通話を終了したら、ここに戻り、下の確認ボタンをタップします。</string>
     <string name="delete_thread_messages">チャット履歴を削除</string>
@@ -444,14 +430,11 @@ http://kontalk.org/</string>
     <string name="menu_leave_group">グループを離れる</string>
     <string name="pref_emoji_converter">スマイリーを絵文字に変換</string>
     <string name="pref_title_emoji_converter">自動的に一部のテキストスマイリーを絵文字に変換</string>
-
     <string name="pref_balloon_label_silence">サイレンス</string>
     <string name="title_passphrase_request">秘密鍵のパスワード</string>
     <string name="err_invalid_passphrase">パスワードが間違っています。 アプリを再起動して別のを試してください。</string>
-
     <string name="chooser_error_no_gallery_app">ギャラリーアプリはありません。</string>
     <string name="chooser_error_no_app">ファイルを開くのに適したアプリがありません。</string>
-
     <string name="chooser_error_no_dialer">このデバイスに通話可能な電話アプリも、電話機能もありません。</string>
     <string name="chooser_error_no_browser">リンクを開くためのブラウザがありません。</string>
     <string name="button_refuse">拒否</string>
@@ -460,21 +443,16 @@ http://kontalk.org/</string>
     <string name="text_invitation_info">(チャットの招待状)</string>
     <string name="title_identity">ID</string>
     <string name="title_identity_self">ID (あなたの!)</string>
-
     <string name="pref_media_autodownload_threshold">自動ダウンロードのしきい値</string>
     <string name="pref_title_media_autodownload_threshold">このサイズより小さいファイルは常に自動的にダウンロードされます</string>
     <string name="pref_msg_media_autodownload_threshold">KB 単位で値を入力してください。 自動的にダウンロードされないようにするには 0 に設定します。</string>
-
     <string name="pref_media_autodownload">自動的にダウンロード</string>
     <string name="pref_media_autodownload_label_never">しない</string>
     <string name="pref_media_autodownload_label_wifi">Wi-Fi 時のみ</string>
     <string name="pref_media_autodownload_label_always">常に</string>
-
     <string name="pref_on">オン</string>
     <string name="pref_off">オフ</string>
-
     <string name="warning_public_key_group_unverified">一部のグループメンバーの ID が検証されていません。</string>
-
     <string name="about_credits_contrib"><b>貢献者</b></string>
     <string name="group_untitled">無題のグループ</string>
     <string name="title_group_subject">グループ見出し</string>
@@ -482,16 +460,13 @@ http://kontalk.org/</string>
     <string name="group_command_self_parted">あなたはグループを退出しました。</string>
     <string name="group_command_user_parted">%s がグループを退出しました。</string>
     <string name="group_command_subject">グループの見出しを設定しました: %s</string>
-
     <string name="group_command_text_create">グループを作成しました</string>
     <string name="group_command_text_subject">グループ見出しを変更しました</string>
     <string name="group_command_text_part">誰かがこのグループを退出しました</string>
     <string name="group_command_text_part_self">あなたはこのグループを退出しました</string>
     <string name="group_command_text_part_kicked">あなたはこのグループから削除されました</string>
     <string name="group_command_text_add_remove">誰かが追加または削除されました</string>
-
     <string name="groupinfo_activity_title">グループ情報</string>
-
     <string name="group_info_set_title">見出しを変更</string>
     <string name="group_info_leave">グループを離れる</string>
     <string name="group_info_members">グループメンバー</string>
@@ -499,97 +474,71 @@ http://kontalk.org/</string>
     <string name="confirm_will_leave_group">グループを離れた後、再びこのグループに入ることはできません。</string>
     <string name="leave_group_delete_messages">チャット履歴も削除</string>
     <string name="group_info_menu_remove">削除</string>
-
     <string name="title_ignore_all_identities">すべての ID を無視しますか?</string>
     <string name="msg_ignore_all_identities">すべての未確認の ID は無視されたものとしてマークされます。</string>
     <string name="learn_more">もっと詳しく</string>
-
     <string name="text_group_command_fallback">これはグループチャットメッセージです。 古いバージョンの Kontalk を使用しているか、クライアントがグループチャットプロトコルをサポートしていません。 最新バージョンにアップグレードしてください!</string>
-
     <string name="title_huawei_protected_apps">Huawei 保護アプリ</string>
     <string name="msg_huawei_protected_apps">Kontalk が正常に機能するには、保護されたアプリで有効にする必要があります。</string>
     <string name="btn_huawei_protected_apps">保護されたアプリ</string>
-
     <string name="status_label">"ステータス: "</string>
     <string name="trust_unknown">未確認</string>
     <string name="trust_ignored">無視</string>
     <string name="trust_verified">確認済</string>
-
     <string name="action_compose">新しいチャット</string>
     <string name="action_compose_group">新しいグループ</string>
-
     <string name="pref_reporting">匿名の使用統計情報を送信する</string>
     <string name="pref_title_reporting">クラッシュレポートを含む</string>
-
     <string name="notification_group_title">%1$s @ %2$s</string>
-
     <plurals name="unread_messages_group">
-	<item quantity="other">%1$d メッセージ @ %2$s</item>
-</plurals>
-
+        <item quantity="other">%1$d メッセージ @ %2$s</item>
+    </plurals>
     <plurals name="confirm_will_delete_threads">
         <item quantity="other">選択したチャットは削除されます。</item>
     </plurals>
-
     <plurals name="delete_threads_leave_groups">
-	<item quantity="other">グループも退出する</item>
-</plurals>
-
-<string name="menu_ctx_sticky">お気に入り</string>
+        <item quantity="other">グループも退出する</item>
+    </plurals>
+    <string name="menu_ctx_sticky">お気に入り</string>
     <string name="menu_start_group">グループを開始</string>
     <string name="group_command_owner_parted">所有者 (%s) がグループから退出しました。 誰もメンバーを追加または削除することはできません。</string>
     <string name="group_info_owner_member">所有者</string>
     <string name="delete_threads_leave_any_groups">グループからも退出する</string>
-
     <string name="pref_balloons_groups">グループチャット バルーンテーマ</string>
-
     <string name="delete_threads_groups_disclaimer">グループのチャットは、上のチェックボックスが選択されていない限り、チャットの履歴のみが削除されます。</string>
-
     <string name="create_group_disclaimer">チャットするために、グループ内のすべてのメンバーがお互いを知っている必要があります。</string>
     <string name="check_dont_show_again">今後表示しない</string>
-
     <string name="pref_debug_log">デバッグログを有効にする</string>
     <string name="pref_send_debug_log">デバッグログを送信</string>
-
     <string name="menu_encryption">暗号化</string>
     <string name="title_disable_encryption">このチャットで暗号化を無効にしますか?</string>
     <string name="msg_disable_encryption">このチャットで送信される新しいメッセージはすべて暗号化されません。
  連絡先に秘密鍵がない場合のみ、暗号化を無効にしてください。</string>
     <string name="menu_disable_encryption">無効</string>
-
     <plurals name="notification_more">
-	    <item quantity="other">+%d 以上</item>
+        <item quantity="other">+%d 以上</item>
     </plurals>
-
     <plurals name="context_selected">
-	    <item quantity="other">%d 選択済</item>
+        <item quantity="other">%d 選択済</item>
     </plurals>
-
     <plurals name="group_people">
-	    <item quantity="other">%d 人</item>
+        <item quantity="other">%d 人</item>
     </plurals>
-
     <string name="group_info_menu_add_again">もう一度追加</string>
-
     <string name="status_notsubscribed">許可しない/ブロック済</string>
-
     <string name="notify_text_decryption_error">復号化に失敗しました</string>
     <string name="group_command_users_added">ユーザーを追加しました:</string>
     <string name="group_command_users_removed">ユーザーを削除しました:</string>
-
-<string name="registration_poweredby">Powered by</string>
-
+    <string name="registration_poweredby">Powered by</string>
     <string name="reply">返信</string>
     <string name="person_me">自分</string>
     <string name="audio_duration_max">%1$s / %2$s</string>
-
     <string name="msg_register_confirm_number1">電話番号を確認します:</string>
     <string name="msg_register_confirm_number2">番号が正しいことを再度確認してください。</string>
     <string name="code_validation_intro3">SMSや電話は、外国の番号から発信される可能性があります。</string>
     <string name="title_doze_mode">バッテリー最適化</string>
     <string name="msg_doze_mode">Kontalk は、正しく機能するためにバッテリー最適化からホワイトリストに登録する必要があります。 お使いのバッテリーを消耗しないことを約束します。</string>
     <string name="btn_request_doze_mode_whitelist">アクセス許可の要求</string>
-
     <string name="menu_import_device">別のデバイスから登録</string>
     <string name="pref_account_settings">アカウント</string>
     <string name="open_conversation">表示</string>
@@ -605,7 +554,6 @@ http://kontalk.org/</string>
     <string name="seen_group_typing_label_more">%d 人が入力しています…</string>
     <string name="pref_maps_google_label">Google マップ</string>
     <string name="pref_maps_osm_label">OpenStreetMap</string>
-
     <string name="notification_location">位置を送信しました</string>
     <string name="location_no_result">結果はありません</string>
     <string name="places_nearby">近くの場所</string>
@@ -621,38 +569,28 @@ http://kontalk.org/</string>
     <string name="err_location_access_unknown_error">位置サービスのアクティベーションをリクエストできません。</string>
     <string name="err_location_permission">位置のアクセスが拒否されました。</string>
     <string name="msg_location_disabled">位置にアクセスする必要があります。 OK を選択し、設定に移動して有効にしてください。</string>
-
     <string name="menu_open_map">マップ中で開く</string>
     <string name="menu_map">マップ</string>
     <string name="menu_satellite">衛星</string>
-
     <string name="pref_server_messages">サーバーメッセージを受信</string>
     <string name="pref_title_server_messages">サーバー管理者からのメッセージを許可します。これを無効にすると重要なニュースを見逃す可能性があります</string>
-
     <string name="notification_ticker_service_running">Kontalk はバックグラウンドで実行しています</string>
     <string name="notification_text_service_running">タップして開く</string>
-
     <string name="err_audio_record_permission">マイクのアクセスが拒否されました。</string>
     <string name="err_audio_record_writing_permission">外部ストレージのアクセスが拒否されました。</string>
     <string name="pref_location_settings">位置</string>
     <string name="pref_maps_service">サービスプロバイダー</string>
-
     <string name="msg_request_doze_failed_manual">次の画面で Kontalk が最適化されていないとしてマークしてください。</string>
     <string name="msg_request_doze_failed_all">バッテリーの最適化設定が見つからなかったため、システム設定に移動します。</string>
-
     <string name="pref_foreground_service">フォアグラウンドサービスを有効にする</string>
     <string name="pref_title_foreground_service">リソースが少なくなったときに Kontalk をバックグラウンドでアクティブのままにしたい場合は、これを有効にします。 スティッキー通知が表示されます</string>
     <string name="pref_title_foreground_service_mandatory">このデバイスで Kontalk を正しく機能させるには、この設定が必要です</string>
-
     <string name="menu_import_messages">メッセージのインポート</string>
-
     <string name="pref_copy_database">データベースのコピー</string>
     <string name="msg_copy_database_success">データベースをコピーしました: %s</string>
     <string name="msg_copy_database_failed">データベースのコピーに失敗しました: %s</string>
-
     <string name="registration_accept_terms_title">サービス利用規約に同意しますか\?</string>
     <string name="registration_accept_terms_text">&lt;b&gt;%1$s&lt;/b&gt; のサーバーが &lt;a href=%2$s&gt;サービス利用規約の同意&lt;/a&gt; を要求しています。</string>
-
     <string name="pref_register_device">デバイスの登録</string>
     <string name="register_device_title">デバイスの登録</string>
     <string name="register_device_instructions">他のデバイスから、下のバーコードを撮影するか、次のデータを手動で入力してください。</string>
@@ -660,7 +598,6 @@ http://kontalk.org/</string>
     <string name="register_device_requesting">登録を要求しています…</string>
     <string name="register_device_nonetwork">ネットワークが利用できません。後でもう一度やり直してください。</string>
     <string name="register_device_offline">オフラインモードが有効です。</string>
-
     <string name="import_device_title">アカウントのインポート</string>
     <string name="import_device_instructions">他のデバイスに表示されるので、要求されたデータを以下に入力してください。</string>
     <string name="import_device_hint_account">電話番号</string>
@@ -673,22 +610,17 @@ http://kontalk.org/</string>
     <string name="import_device_btn_scan">バーコードをスキャン</string>
     <string name="import_device_btn_input">手動で入力</string>
     <string name="import_device_message">他のデバイスで Kontalk を開き、メニュー &gt; 設定 &gt; メンテナンス &gt; デバイスの登録を選択します。 シークレットコードとそれを表すバーコードが表示されます。</string>
-
     <string name="btn_device_overwrite">古いアカウントまたはデバイスを紛失しました</string>
     <string name="btn_device_import">アカウントを転送</string>
-
     <string name="contactinfo_activity_title">連絡先情報</string>
     <string name="contactinfo_last_seen">前回の表示 %s</string>
     <string name="contactinfo_phone_number">電話番号</string>
     <string name="contactinfo_fingerprint">指紋</string>
     <string name="contactinfo_userid">ユーザーID</string>
-
     <string name="btn_reply_cancel_description">返信のキャンセル</string>
     <string name="reply_message_deleted">メッセージを削除しました。</string>
-
     <string name="title_archived_threads">アーカイブしたチャット</string>
     <string name="footer_archived_threads">アーカイブしたチャット (%d)</string>
-
     <string name="err_validation_contacts_denied">正しく機能するために Kontalk は連絡先にアクセスする必要があります。 チャットできる相手をどのように確認できますか\?\?
 \n今は、キャンセルすることができますが、登録した後に再び尋ねられます。</string>
     <string name="err_contacts_denied">正しく機能するために Kontalkは連絡先にアクセスする必要があります。 チャットできる相手をどのように確認できますか\?\?
@@ -696,53 +628,68 @@ http://kontalk.org/</string>
     <string name="warn_contacts_denied">連絡先へのアクセスを拒否しました。 ここで連絡先の変更を参照することはできません。</string>
     <string name="err_camera_scanner_denied">他の機器からバーコードをスキャンするため、カメラにアクセスする必要があります。</string>
     <string name="err_camera_picture_denied">写真を撮るため、カメラにアクセスする必要があります。</string>
-
     <string name="err_audio_or_storage_denied">声を録音するためにマイクにアクセスする必要があります。録音を保存するため外部ストレージにアクセスする必要があります。</string>
-
-    <string name="err_storage_denied">メディアを保存するために Kontalk はローカルストレージにアクセスする必要があります。
-\nAndroid の設定からストレージへのアクセスを許可することができます。</string>
-
+    <string name="err_storage_denied">メディアを保存するために Kontalk はローカルストレージにアクセスする必要があります。</string>
     <string name="err_location_denied">位置を共有したい場合は、位置にアクセスする必要があります。</string>
-
     <string name="err_validation_phone_state_denied">Kontalk に通話の管理を許可すると、自動的にお使いの電話番号を検出することができます。
 \nKontalk は許可されたアクセス許可を他には使用しません。</string>
-
     <string name="err_emoji_disabled_in_multiwindow">絵文字はマルチウィンドウモードでは使用できません。</string>
-
     <string name="permission_messages_label">Kontalk メッセージへのアクセス</string>
     <string name="permission_messages_description">Kontalk メッセージデータベースの読み書きが可能</string>
     <string name="permission_users_label">Kontalk ユーザー情報へのアクセス</string>
     <string name="permission_users_description">Kontalk ユーザーデータベースと鍵リングの読み書きが可能</string>
-
     <string name="pref_enable_outgoing_sound">送信メッセージのサウンドを再生する</string>
-
     <string name="contact_name_server">お使いのサーバー</string>
-
     <string name="notify_incoming_message_channel_name">メッセージ</string>
     <string name="notify_incoming_message_channel_description">受信メッセージ</string>
-
     <string name="notify_media_download_channel_name">ダウンロード</string>
     <string name="notify_media_download_channel_description">メディアダウンロード</string>
-
     <string name="notify_media_upload_channel_name">アップロード</string>
     <string name="notify_media_upload_channel_description">メディアアップロード</string>
-
     <string name="notify_message_center_channel_name">メッセージセンター</string>
     <string name="notify_message_center_channel_description">Kontalk サービスを存続させるために必要</string>
-
     <string name="notify_other_channel_name">その他</string>
     <string name="notify_other_channel_description">その他の通知</string>
-
     <plurals name="group_people_online">
-	<item quantity="other">%d オンライン</item>
-</plurals>
-
-<string name="pref_service_terms">サービス利用規約</string>
-
+        <item quantity="other">%d オンライン</item>
+    </plurals>
+    <string name="pref_service_terms">サービス利用規約</string>
     <string name="err_storage_denied_interactive">メディアを保存するために Kontalk はローカルストレージにアクセスする必要があります。 アクセス許可の確認をします。</string>
-
     <string name="notify_ticker_download_permission_denied_error">メディアをダウンロードするためにアクセス許可が必要です</string>
     <string name="notify_title_download_permission_denied_error">アクセス許可が必要です</string>
     <string name="notify_summary_download_permission_denied_error">タップすると詳細を表示します。</string>
-
-    </resources>
+    <string name="showcase_composer_toolbar_group_message">ツールバーをタップすると、メンバーを表示してグループを編集できます。</string>
+    <string name="showcase_composer_toolbar_group_title">グループ情報</string>
+    <string name="showcase_composer_toolbar_single_message">ツールバーをタップすると連絡先情報を表示します。</string>
+    <string name="showcase_composer_toolbar_single_title">連絡先情報</string>
+    <string name="showcase_composer_attach_message">写真、録音、その他を共有できます。</string>
+    <string name="showcase_composer_attach_title">テキストだけでなく</string>
+    <string name="showcase_conversations_dark_mode_message">設定 &gt; 外観 でダークテーマを有効にすることができます。</string>
+    <string name="showcase_conversations_dark_mode_title">ダークモード</string>
+    <string name="showcase_conversations_compose_message">このボタンを使用して誰かとチャットを始めます。</string>
+    <string name="showcase_conversations_compose_title">チャットを開始</string>
+    <string name="msg_hints_reset">チュートリアルヒントをリセットしました。</string>
+    <string name="pref_title_reset_hints">アプリのチュートリアルヒントを再度表示する</string>
+    <string name="pref_reset_hints">ヒントをリセット</string>
+    <plurals name="msg_storage_attachment_saved">
+        <item quantity="other">添付ファイルを外部ストレージに保存しました。</item>
+    </plurals>
+    <string name="err_storage_attachment_some">エラーのため一部の添付ファイルが保存できませんでした。</string>
+    <string name="err_storage_attachment_single">添付ファイルを保存できません。</string>
+    <string name="err_storage_photo_gallery">写真をギャラリーに保存できません。</string>
+    <string name="err_camera_picture_storage_denied">写真を撮影するためにカメラにアクセスする必要があります。 また、ストレージへの書き込みアクセスが許可された場合、自動的にギャラリーに写真を登録します。</string>
+    <string name="warn_external_contacts_denied">連絡先へのアクセスが拒否されました。 手動でチャットを開く必要があります。</string>
+    <string name="ptt_button">録音</string>
+    <string name="chooser_error_share_denied">元のファイルへのアクセスが拒否されました。</string>
+    <string name="chooser_error_no_share_app">ファイルを共有するためのアプリが見つかりません。</string>
+    <string name="pref_uitheme_label_dark">ダーク</string>
+    <string name="pref_uitheme_label_light">ライト</string>
+    <string name="pref_uitheme_label_default">バッテリーセーバーで設定</string>
+    <string name="pref_ui_theme">テーマ</string>
+    <string name="text_contacts_recents_empty">最近のチャットがここに表示されます。 上のボタンを使用して <b>連絡先に切り替え</b> できます。</string>
+    <string name="menu_switch_recents">最近使用した</string>
+    <string name="menu_switch_contacts">連絡先</string>
+    <string name="contacts_list_recents_title">最近のチャット</string>
+    <string name="save_attachment">添付ファイルを保存</string>
+    <string name="pref_account_settings_system">アカウントの管理</string>
+</resources>
