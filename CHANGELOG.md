@@ -1,5 +1,10 @@
 # Changelog
 
+## [Next]
+### Changed
+
+### Fixed
+
 ## [4.4.0] - 2020-07-04
 ### Changed
 - Dark theme (#41)
@@ -600,6 +605,7 @@
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
 
+[Next]: https://github.com/kontalk/androidclient/compare/v4.4.0...HEAD
 [4.4.0]: https://github.com/kontalk/androidclient/compare/v4.3.1...v4.4.0
 [4.3.1]: https://github.com/kontalk/androidclient/compare/v4.3.0...v4.3.1
 [4.3.0]: https://github.com/kontalk/androidclient/compare/v4.2.0...v4.3.0
