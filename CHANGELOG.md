@@ -23,6 +23,7 @@
 - Fix crash on accessing files on external storage (#1273)
 - Fix some registration issues (#1271, #1272, #1274, #1275)
 - Fix storage permission issue (#1277)
+- Fail gracefully when contacts access is denied (#1281)
 - Contact pictures in notification on Android 9+ (#1288)
 - Fix deadlock in faulty networks
 - Fix audio recordings permission problem on Android 10
