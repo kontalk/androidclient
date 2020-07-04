@@ -699,4 +699,5 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="pref_uitheme_label_default">Da risparmio batteria</string>
     <string name="pref_ui_theme">Tema</string>
     <string name="pref_account_settings_system">Gestisci account</string>
+    <string name="warn_external_contacts_denied">Hai negato l\'accesso ai contatti. Dovrai aprire la chat manualmente.</string>
 </resources>
