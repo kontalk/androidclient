@@ -1,12 +1,10 @@
 Registration provider kindly offered by https://JMP.Chat
 Help us improve and fix bugs by reporting them on GitHub or discussing them on our forum!
 
-* Group chat indicator in chat list
-* Support for Android Oreo
-* Support for multiwindow
-* Improve registration screen
-* Smack upgraded to 4.3.1
-* Faster reconnection on faulty networks
+* Dark theme
+* Sharing to groups
+* Support for Android 10
+* Media is no longer saved to public storage automatically
+* Improve audio recording quality
+* Fix contact pictures in notifications for Android 9+
 * Fix several crashes and other bugs
-* Fix broken static maps
-* Picture notification for groups now correctly shows group title
