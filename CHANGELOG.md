@@ -2,8 +2,10 @@
 
 ## [Next]
 ### Changed
+- Use same preference screen also with no account present
 
 ### Fixed
+- Fix crash after account deletion
 
 ## [4.4.0] - 2020-07-04
 ### Changed
