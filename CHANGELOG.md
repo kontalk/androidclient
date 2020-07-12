@@ -6,6 +6,7 @@
 
 ### Fixed
 - Fix crash after account deletion
+- Fix crash while reopening registration screen
 
 ## [4.4.0] - 2020-07-04
 ### Changed
