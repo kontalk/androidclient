@@ -33,7 +33,6 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
-import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.crypto.PersonalKeyPack;
