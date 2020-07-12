@@ -302,9 +302,11 @@
                 android:value="org.kontalk.ui.NumberValidation" />
         </activity>
 
-        <activity android:name=".ui.NumberValidation"/>
+        <activity android:name=".ui.NumberValidation"
+            android:launchMode="singleInstance"/>
 
-        <activity android:name=".ui.CodeValidation"/>
+        <activity android:name=".ui.CodeValidation"
+            android:launchMode="singleInstance"/>
 
         <activity android:name=".ui.ContactsListActivity"
             android:label="@string/contacts_list_title"

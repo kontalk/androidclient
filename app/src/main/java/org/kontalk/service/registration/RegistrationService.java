@@ -69,6 +69,8 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -83,6 +85,8 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -90,6 +94,7 @@ import android.util.Base64;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Log;
+import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.MyAccount;
 import org.kontalk.client.Account;
@@ -127,10 +132,14 @@ import org.kontalk.service.registration.event.UserConflictError;
 import org.kontalk.service.registration.event.VerificationError;
 import org.kontalk.service.registration.event.VerificationRequest;
 import org.kontalk.service.registration.event.VerificationRequestedEvent;
+import org.kontalk.ui.CodeValidation;
 import org.kontalk.util.DataUtils;
 import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
+
+import static org.kontalk.ui.MessagingNotification.CHANNEL_OTHER;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_REGISTRATION;
 
 
 /**
@@ -171,6 +180,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         WAITING_ACCEPT_TERMS,
         /** Requesting verification to a server. */
         REQUESTING_VERIFICATION,
+        /** Waiting for a challenge (e.g. PIN) from UI. */
+        WAITING_CHALLENGE,
         /** Waiting for a passphrase from UI. */
         WAITING_PASSPHRASE,
         /** Processing an imported key. */
@@ -224,6 +235,9 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     public static final String CHALLENGE_CALLER_ID = "callerid";
     // default requested challenge
     private static final String DEFAULT_CHALLENGE = CHALLENGE_PIN;
+
+    /** Registration service will restart in foreground mode. */
+    private static final String ACTION_RESTART_FOREGROUND = "org.kontalk.registration.RESTART_FOREGROUND";
 
     /** Posted as a sticky event on the bus. */
     public static final class CurrentState {
@@ -310,33 +324,39 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             BUS.register(this);
         }
 
-        // restore state from preferences in case the app was killed mid-registration
-        CurrentState state = null;
-        try {
-            state = restoreState();
+        if (intent != null && ACTION_RESTART_FOREGROUND.equals(intent.getAction())) {
+            startForeground();
         }
-        catch (Exception e) {
-            Log.w(TAG, "unable to restore registration progress", e);
-            clearSavedState();
-        }
+        else {
 
-        if (state == null) {
-            state = currentState();
+            // restore state from preferences in case the app was killed mid-registration
+            CurrentState state = null;
+            try {
+                state = restoreState();
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to restore registration progress", e);
+                clearSavedState();
+            }
 
-            if (state != null) {
-                // handling non-persistent states
-                switch (state.state) {
-                    case WAITING_ACCEPT_TERMS:
-                        BUS.post(new AcceptTermsRequest(state.termsUrl));
-                        break;
+            if (state == null) {
+                state = currentState();
+
+                if (state != null) {
+                    // handling non-persistent states
+                    switch (state.state) {
+                        case WAITING_ACCEPT_TERMS:
+                            BUS.post(new AcceptTermsRequest(state.termsUrl));
+                            break;
+                    }
                 }
             }
-        }
 
-        if (state == null || state.key == null) {
-            // since it may take some time, we should start key generation just
-            // in case, even if eventually we won't need it (e.g. import)
-            startKeyGenerator();
+            if (state == null || state.key == null) {
+                // since it may take some time, we should start key generation just
+                // in case, even if eventually we won't need it (e.g. import)
+                startKeyGenerator();
+            }
         }
 
         return START_NOT_STICKY;
@@ -395,10 +415,53 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         mServiceHandler = null;
     }
 
+    @Override
+    public void onRebind(Intent intent) {
+        stopForeground(true);
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        CurrentState cstate = currentState();
+        if (cstate != null && cstate.state == State.WAITING_CHALLENGE) {
+            // all activities disconnected while waiting for user challenge
+            // keep ourselves alive
+            restartForeground();
+        }
+        return true;
+    }
+
+    private void startForeground() {
+        Intent ni = new Intent(getApplicationContext(), CodeValidation.class);
+        PendingIntent pi = PendingIntent.getActivity(this,
+            NOTIFICATION_ID_REGISTRATION, ni, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // build the notification
+        final Notification notification = new NotificationCompat
+            .Builder(this, CHANNEL_OTHER)
+            .setOngoing(true)
+            .setSmallIcon(R.drawable.ic_stat_notify)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setTicker(getString(R.string.notification_ticker_registration_running))
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.notification_text_registration_running))
+            .setContentIntent(pi)
+            .build();
+
+        startForeground(NOTIFICATION_ID_REGISTRATION, notification);
+    }
+
+    private void restartForeground() {
+        Intent intent = new Intent(this, RegistrationService.class);
+        intent.setAction(ACTION_RESTART_FOREGROUND);
+        ContextCompat.startForegroundService(this, intent);
     }
 
     private void startKeyGenerator() {
@@ -1104,11 +1167,12 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                     cstate.challenge = challenge;
                     ReportingManager.logRegister(challenge);
 
-                    // time to save state
-                    saveState(smsFrom, brandImage, brandLink, canFallback);
-
                     BUS.post(new VerificationRequestedEvent(smsFrom, challenge,
                         brandImage, brandLink, canFallback));
+
+                    // time to save state
+                    updateState(State.WAITING_CHALLENGE);
+                    saveState(smsFrom, brandImage, brandLink, canFallback);
                     return;
                 }
             }

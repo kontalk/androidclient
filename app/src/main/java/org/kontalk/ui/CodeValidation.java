@@ -63,6 +63,7 @@ import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.registration.RegistrationService;
+import org.kontalk.service.registration.event.AbortRequest;
 import org.kontalk.service.registration.event.AccountCreatedEvent;
 import org.kontalk.service.registration.event.ChallengeError;
 import org.kontalk.service.registration.event.ChallengeRequest;
@@ -301,6 +302,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
                 @Override
                 public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     // we are going back voluntarily
+                    mServiceBus.post(new AbortRequest());
                     RegistrationService.clearSavedState();
                     CodeValidation.super.onBackPressed();
                 }

@@ -454,6 +454,13 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         askPermissions();
     }
 
+    @Override
+    public void onBackPressed() {
+        // willingly exiting the registration process
+        RegistrationService.stop(this);
+        super.onBackPressed();
+    }
+
     private void register() {
         if (!mServiceBus.isRegistered(this)) {
             mServiceBus.register(this);

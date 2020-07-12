@@ -139,6 +139,9 @@ public class MessagingNotification {
     @NotificationChannelId(CHANNEL_MESSAGE_CENTER)
     public static final int NOTIFICATION_ID_FOREGROUND      = 110;
 
+    @NotificationChannelId(CHANNEL_OTHER)
+    public static final int NOTIFICATION_ID_REGISTRATION    = 111;
+
     private static final String[] MESSAGES_UNREAD_PROJECTION =
     {
         Messages.THREAD_ID,

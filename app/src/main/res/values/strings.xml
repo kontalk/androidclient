@@ -500,6 +500,9 @@
     <string name="notification_ticker_service_running">Kontalk is running in the background</string>
     <string name="notification_text_service_running">Tap to open</string>
 
+    <string name="notification_ticker_registration_running">Kontalk registration underway</string>
+    <string name="notification_text_registration_running">Registration in progress</string>
+
     <string name="warn_invite_no_app">No application available to invite users.</string>
 
     <string name="pref_text_enter">Enter button</string>
