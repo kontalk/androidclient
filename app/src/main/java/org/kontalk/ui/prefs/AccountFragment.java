@@ -362,6 +362,8 @@ public class AccountFragment extends RootPreferenceFragment {
 
                                 AccountManagerCallback<Boolean> callback = new AccountManagerCallback<Boolean>() {
                                     public void run(AccountManagerFuture<Boolean> future) {
+                                        // invalidate cache
+                                        Kontalk.get().invalidatePersonalKey();
                                         // dismiss progress
                                         progress.dismiss();
                                         // exit now
