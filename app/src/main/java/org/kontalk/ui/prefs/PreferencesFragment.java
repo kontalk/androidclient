@@ -64,6 +64,12 @@ public final class PreferencesFragment extends RootPreferenceFragment {
             if (prefReporting != null)
                 getPreferenceScreen().removePreference(prefReporting);
         }
+
+        if (Kontalk.get().getDefaultAccount() == null) {
+            // no account, hide some stuff
+            Preference prefAccount = findPreference("pref_account_settings");
+            getPreferenceScreen().removePreference(prefAccount);
+        }
     }
 
     @Override
@@ -99,13 +105,16 @@ public final class PreferencesFragment extends RootPreferenceFragment {
 
     private void setupPreferences(String pref, final int xml) {
         final Preference preference = findPreference(pref);
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                invokeCallback(xml);
-                return true;
-            }
-        });
+        if (preference != null) {
+            // null preference means it's been removed
+            preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    invokeCallback(xml);
+                    return true;
+                }
+            });
+        }
     }
 
 }

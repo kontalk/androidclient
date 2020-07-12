@@ -56,16 +56,7 @@ public final class PreferencesActivity extends BasePreferencesActivity
         setupToolbar(true, false);
 
         if (savedInstanceState == null) {
-            Fragment fragment;
-
-            // no account - redirect to bootstrap preferences
-            if (Kontalk.get().getDefaultAccount() == null) {
-                fragment = new BootstrapPreferences();
-            }
-            else {
-                fragment = new PreferencesFragment();
-            }
-
+            Fragment fragment = new PreferencesFragment();
             getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, fragment)
                 .commit();

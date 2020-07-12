@@ -18,7 +18,6 @@
 
 package org.kontalk.ui.prefs;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -48,12 +47,16 @@ public class MaintenanceFragment extends RootPreferenceFragment {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Log.w(TAG, "manual message center restart requested");
-                Context ctx = getActivity();
-                MessageCenterService.restart(ctx.getApplicationContext());
-                Toast.makeText(ctx, R.string.msg_msgcenter_restarted, Toast.LENGTH_SHORT).show();
+                MessageCenterService.restart(preference.getContext().getApplicationContext());
+                Toast.makeText(preference.getContext(), R.string.msg_msgcenter_restarted, Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
+
+        if (Kontalk.get().getDefaultAccount() == null) {
+            // no account, hide/disable some stuff
+            restartMsgCenter.setEnabled(false);
+        }
 
         // explain the user that the foreground service is mandatory
         if (MessageCenterService.mustSetForeground(getContext())) {
