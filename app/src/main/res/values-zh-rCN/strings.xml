@@ -46,12 +46,12 @@
     <string name="hint_validation_name">你的姓名</string>
     <string name="hint_validation_number">你的电话号码</string>
     <string name="hint_validation_code">验证码</string>
-    <string name="warn_invalid_number">请输入一个有效的手机号码。</string>
+    <string name="warn_invalid_number">请输入有效的手机号码。</string>
     <string name="msg_validating_phone">正在请求注册……</string>
     <string name="msg_importing_key">正在导入个人密匙……</string>
     <string name="title_confirm_cancel_registration">取消注册？</string>
     <string name="confirm_cancel_registration">若你返回，你将不得不重新开始注册。如果你需要切换至另一个应用，请按下设备上面的主页键。</string>
-    <string name="msg_initializing">正在注册到Kontalk网络……</string>
+    <string name="msg_initializing">正在注册到 Kontalk 网络……</string>
     <string name="msg_authenticated">已经注册到网络！</string>
     <string name="share">分享</string>
     <string name="resend">重新发送</string>
@@ -68,7 +68,7 @@
     <string name="confirm_delete_thread">删除聊天</string>
     <string name="confirm_will_delete_thread">整个聊天记录将被清空。</string>
     <string name="new_messages">新消息</string>
-    <string name="only_one_account_supported">仅支持一个Kontalk账户。</string>
+    <string name="only_one_account_supported">仅支持一个 Kontalk 账户。</string>
     <string name="hint_enter_text">这里输入你的消息</string>
     <string name="hint_type_to_compose">输入以撰写</string>
     <string name="hint_open_kbd_to_compose">打开键盘以撰写消息</string>
@@ -95,7 +95,7 @@
     <string name="size_unknown">（未知）</string>
     <string name="title_file_info">文件信息</string>
     <string name="pref_restart_msgcenter">重启消息中心</string>
-    <string name="pref_title_restart_msgcenter">如果Kontalk不能正常工作请使用它</string>
+    <string name="pref_title_restart_msgcenter">如果 Kontalk 不能正常工作，请使用它</string>
     <string name="pref_idle_time">闲置多久断线</string>
     <string name="pref_title_idle_time">非活动时断线前需要等待的时间</string>
     <string name="pref_wakeup_time">重新连接到服务器</string>
@@ -116,7 +116,7 @@
     <string name="pref_hide_presence">隐身</string>
     <string name="pref_title_on_hide_presence">用户将无法看到你在线</string>
     <string name="pref_title_off_hide_presence">用户将看到你在线，以及最后一次连接的时间</string>
-    <string name="contact_not_registered">看起来联系人并没有在Kontalk网络注册。</string>
+    <string name="contact_not_registered">看来此联系人并没有在 Kontalk 网络注册。</string>
     <string name="error_store_outbox">无法将消息存储到发件箱。或许你的存储器空间已经满了？</string>
     <string name="error_delete_thread">无法删除讨论。</string>
     <string name="error_delete_message">无法删除消息。</string>
@@ -148,10 +148,10 @@
     <string name="err_validation_retry_later">尝试次数过多。请等待数分钟后重试。</string>
     <string name="msg_validation_canceled">验证取消。但是你会收到短信验证。</string>
     <string name="err_validation_error">验证期间发生了一个错误。请稍后重试。</string>
-    <string name="err_validation_nonetwork">没有可用的因特网连接。Kontalk需要一个活动的因特网连接才能工作。</string>
+    <string name="err_validation_nonetwork">没有可用的因特网连接。Kontalk 需要活动的因特网连接才能工作。</string>
     <string name="err_validation_network_error">无法连接到服务器。请稍后重试。</string>
     <string name="err_validation_server_not_supported">选择的服务器不支持注册。请在设置页面设置新的服务器。</string>
-    <string name="err_validation_user_exists"><b>你使用的手机号码已经被注册到了Kontalk.</b>如果你已经注册了另一个设备，继续注册将会使原账户从Kontalk网络注销。如果你准备注册到你的新设备，请选择传送账户。</string>
+    <string name="err_validation_user_exists"><b>你使用的手机号码已经被注册到了 Kontalk。</b>如果你已经注册了另一个设备，继续注册将会使原账户从 Kontalk 网络注销。如果你准备注册到你的新设备，请选择传送账户。</string>
     <string name="text_encrypted">（已加密）</string>
     <string name="peer_unknown">（未知）</string>
     <string name="msg_draft_saved">消息已被存为草稿。</string>
@@ -176,23 +176,25 @@
     <string name="msg_invalid_code">请输入有效的代码。</string>
     <string name="title_nonetwork">没有因特网连接</string>
     <string name="title_fallback">遇见问题？</string>
-    <string name="msg_fallback">我们将会尝试另一种办法验证你的手机号码。</string>
+    <string name="msg_fallback">我们将会尝试通过另一种办法验证你的手机号码。</string>
     <string name="title_no_name">你的姓名</string>
     <string name="msg_no_name">请输入用户名。</string>
     <string name="menu_refresh">刷新</string>
     <string name="menu_invite">邀请用户</string>
     <string name="title_error">错误</string>
-    <string name="msg_do_refresh">使用菜单 &gt; 刷新来更新联系人列表。</string>
+    <string name="msg_do_refresh">使用「菜单 &gt; 刷新」来更新联系人列表。</string>
     <string name="msg_sync_progress">正在刷新联系人列表……</string>
     <string name="err_sync_failed">无法刷新联系人列表。请稍后重试。</string>
     <string name="err_sync_nonetwork">没有有效网络。请稍后重试。</string>
-    <string name="text_invite_message">嘿！快来谷歌Play商店来瞅瞅Kontalk吧，一个免费的即时消息应用！http://kontalk.org/</string>
-    <string name="text_contacts_empty">新用户将被自动添加到这个列表。\n\n使用<b>菜单</b> &gt; <b>邀请用户</b>以便将邀请的消息发送给某个人。</string>
+    <string name="text_invite_message">嘿！快来谷歌Play商店瞅瞅 Kontalk 吧，一个免费的即时消息应用！ http://kontalk.org/</string>
+    <string name="text_contacts_empty">新用户将被自动添加到这个列表。
+\n
+\n使用「<b>菜单</b> &gt; <b>邀请用户</b>」以便将邀请的消息发送给某个人。</string>
     <string name="text_conversations_empty">使用下面的<b>新消息</b>按钮开始撰写消息。</string>
     <string name="notify_ticker_external_storage">没有外置存储器</string>
     <string name="notify_text_external_storage">无法写入外置存储器。</string>
     <string name="title_user_not_found">找不到用户</string>
-    <string name="message_user_not_found">联系人看起来并没有在Kontalk上注册。然而你可以试着与用户联系或者发送给他/她邀请信息。</string>
+    <string name="message_user_not_found">此联系人看来并没有在 Kontalk 上注册。然而你可以试着与用户联系或者发送给他/她邀请信息。</string>
     <string name="yes_user_not_found">不管怎样都联系用户</string>
     <string name="no_user_not_found">发送邀请</string>
     <string name="pref_appearance_settings">外观</string>
@@ -211,7 +213,7 @@
     <string name="attachment_download">附件下载</string>
     <string name="attachment_upload">附件上传</string>
     <string name="seen_moment_ago_label">刚刚</string>
-    <string name="seen_online_label">活动</string>
+    <string name="seen_online_label">活跃</string>
     <string name="seen_typing_label">正在输入……</string>
     <string name="invitation_sent_label">未处理的邀请</string>
     <string name="pref_custom_background">自定义背景</string>
@@ -381,7 +383,7 @@
     <string name="about_credits_devteam"><b>为你创造Kontalk的人：</b></string>
     <string name="about_credits_gfx"><b>图像/图标</b></string>
     <string name="about_credits_translators"><b>译者</b></string>
-    <string name="app_name_offline">Kontalk （离线）</string>
+    <string name="app_name_offline">Kontalk（离线）</string>
     <string name="seen_away_label">在线</string>
     <string name="err_import_keypair_read">无法从外置存储器读取密匙。</string>
     <string name="attachment_camera">摄像头</string>
@@ -441,8 +443,8 @@
     <string name="delete_thread_messages">删除聊天历史</string>
     <string name="pref_push_notifications_disabled">已禁用</string>
     <string name="pref_push_notifications_title_default">推送是服务器端辅助的帮助节约电量的技术。它不会影响实时的消息传送。
-
-当被禁用后，Kontalk的连接行为可以在网络设置页面精确调整。</string>
+\n
+\n被禁用后，Kontalk 的连接行为可以在网络设置页面精确调整。</string>
     <string name="pref_push_notifications_title_disabled">推送支持并没有包含在此版本。</string>
     <string name="pref_push_notifications_title_unavailable">推送并不能在该设备受支持。</string>
     <string name="pref_emoji_converter">将笑容符转换成绘文字</string>
@@ -582,7 +584,7 @@
     <string name="msg_request_doze_failed_manual">请在下一个屏幕将Kontalk标记为未优化的。</string>
     <string name="msg_request_doze_failed_all">找不到电池优化设置，将切回系统设置界面。</string>
     <string name="pref_foreground_service">启用前台服务</string>
-    <string name="pref_title_foreground_service">如果你想让Kontalk驻扎在后台时占用较低资源可以启动该选项，这样就会显示一个类似告示贴的提醒。</string>
+    <string name="pref_title_foreground_service">如果你想在后台资源不足时让 Kontalk 保持活动，可以启动该选项，会在通知栏显示一条固定通知。</string>
     <string name="pref_title_foreground_service_mandatory">Kontalk需要这些设置才能正常工作</string>
     <string name="menu_import_messages">导入信息</string>
     <string name="pref_copy_database">拷贝数据库</string>
@@ -669,7 +671,7 @@
     <string name="pref_reset_hints">重置提示</string>
     <plurals name="msg_storage_attachment_saved">
         <item quantity="one">附件被保存到外部存储。</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="err_storage_attachment_some">由于错误，某些附件未被保存。</string>
     <string name="err_storage_attachment_single">无法保存附件。</string>
