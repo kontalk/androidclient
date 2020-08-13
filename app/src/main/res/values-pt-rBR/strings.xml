@@ -54,7 +54,7 @@
     <string name="view_contact">Ver o contato</string>
     <string name="view_conversation">Ver a conversa</string>
     <string name="delete_thread">Apagar a conversa</string>
-    <string name="confirm_delete_thread">Apagar a conversa</string>
+    <string name="confirm_delete_thread">Excluir bate-papo</string>
     <string name="confirm_will_delete_thread">A conversa inteira será apagada.</string>
     <string name="new_messages">Novas mensagens</string>
     <string name="only_one_account_supported">Somente uma conta Kontalk é suportada.</string>
@@ -102,7 +102,7 @@
     <string name="pref_auto_accept_subscriptions">Aceitar os convites automaticamente</string>
     <string name="pref_send_typing">Enviar notificação de digitação</string>
     <string name="pref_hide_presence">Ocultar presença</string>
-    <string name="pref_title_on_hide_presence">As pessoas não verão que você está conectado</string>
+    <string name="pref_title_on_hide_presence">As pessoas não verão que você está disponível</string>
     <string name="pref_title_off_hide_presence">As pessoas verão que você está conectado e também quando foi a sua última conexão</string>
     <string name="contact_not_registered">O contato não parece estar registrado no Kontalk.</string>
     <string name="error_store_outbox">Não foi possível armazenar a mensagem na caixa de saída. A memória do dispositivo está cheia?</string>
@@ -352,7 +352,7 @@
     <string name="pref_sync_sim_contacts">Sincronizar com os contatos no SIM</string>
     <string name="pref_title_sync_sim_contacts">Inclui os contatos do SIM ao procurar por usuários registrados</string>
     <string name="pref_sync_invisible_contacts">Incluir contatos invisíveis</string>
-    <string name="pref_title_sync_invisible_contacts">Incluir os contatos não exibidos no aplicativo Contatos. Ativar se você usa o DAVx⁵ ou outro aplicativo de sincronização de contatos.</string>
+    <string name="pref_title_sync_invisible_contacts">Incluir os contatos não exibidos no aplicativo de Contatos. Ativar se você usa o DAVx⁵ ou outro aplicativo de sincronização de contatos</string>
     <string name="pref_accept_any_certificate">Aceitar qualquer certificado SSL</string>
     <string name="pref_delete_account">Excluir sua conta</string>
     <string name="msg_delete_account">Ao excluir sua conta, você também exclui todas as suas mensagens. Sua conta no servidor será excluída automaticamente após algumas semanas.</string>
@@ -360,7 +360,7 @@
     <string name="msg_user_blocked">O usuário foi bloqueado.</string>
     <string name="msg_user_unblocked">O usuário foi desbloqueado.</string>
     <string name="title_block_user_warning">Deseja realmente bloquear esse usuário?</string>
-    <string name="msg_block_user_warning">Você está prestes a bloquear esta pessoa. Caso faça isso, ela não será capaz de lhe enviar nenhuma mensagem ou mídia (e nem você, para ela), até que você a desbloqueie. Esta pessoa também não será capaz de ver o seu status ou último horário de conexão e você também não será capaz de ver o status dela.</string>
+    <string name="msg_block_user_warning">Você está prestes a bloquear esta pessoa. Caso faça isso, a pessoa não será capaz de lhe enviar nenhuma mensagem ou mídia (e nem você, para ela), até que você a desbloqueie. Esta pessoa também não será capaz de ver o seu status ou último horário de conexão e você também não será capaz de ver o status dela.</string>
     <string name="title_unblock_user_warning">Deseja realmente desbloquear essa pessoa?</string>
     <string name="pref_enable_notification_led">Notificação via LED</string>
     <string name="pref_notification_led_color">Cor do LED de notificação</string>
@@ -368,7 +368,7 @@
     <string name="msg_unblock_user_warning">Você está prestes a desbloquear essa pessoa. Ao fazer isso, você permitirá que ela envie mensagens para você, veja o seu status e último horário de conexão.</string>
     <string name="notification_text_more">Toque aqui para saber mais</string>
     <string name="title_auth_error">Erro de autenticação</string>
-    <string name="msg_auth_error">Não foi possível autenticar no servidor Kontalk. Essa pode ser uma falha temporária no servidor ou, mais provavelmente, o servidor está recusando sua chave pessoal. É recomendável que você exclua sua conta no Kontalk, a partir do Android, e registre-se novamente (nesse caso você perderá todas as suas mensagens).</string>
+    <string name="msg_auth_error">Não foi possível autenticar no servidor Kontalk. Essa pode ser uma falha temporária no servidor ou, mais provavelmente, o servidor está recusando sua chave pessoal. É recomendável que você exclua sua conta no Kontalk, de configurações do sistema Android, e registre-se novamente (nesse caso você perderá todas as suas mensagens).</string>
     <string name="warn_invite_no_app">Não existe nenhum aplicativo para convidar pessoas disponível.</string>
     <string name="pref_text_enter">Botão Enter</string>
     <string name="pref_title_text_enter">Selecione o comportamento padrão para o botão Enter no teclado</string>
@@ -471,7 +471,7 @@
     <string name="action_compose">Nova conversa</string>
     <string name="action_compose_group">Novo grupo</string>
     <string name="group_info_menu_remove">Remover</string>
-    <string name="pref_balloon_label_silence">Silence</string>
+    <string name="pref_balloon_label_silence">Silêncio</string>
     <string name="title_passphrase_request">Senha da chave pessoal</string>
     <string name="err_invalid_passphrase">Senha errada. Reinicie a aplicação para tentar outra.</string>
     <string name="group_command_text_part_kicked">Você foi removido desse grupo</string>
@@ -494,7 +494,7 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
     <string name="pref_push_notifications_title_unavailable">Notificações push não são suportadas neste dispositivo.</string>
     <string name="about_credits_contrib"><b>Colaboradores</b></string>
     <string name="pref_push_notifications_disabled">Desabilitado</string>
-    <string name="code_validation_intro_callerid">Toque no botão abaixo e ligue para esse número, desligando assim que ouvir o sinal de chamada. Repare que <b>a chamada tem que ser feita a partir do telefone que você está registrando</b>. Você não pagará nada por isso, desde que encerre a chamada assim que ouvir o primeiro sinal. Isso é o suficiente para nós.</string>
+    <string name="code_validation_intro_callerid">Toque no botão abaixo e dê uma chamada perdida para esse número de telefone. Observe que <b>a chamada deve ser iniciada a partir do número de telefone que você está registrando</b>. Se você desligar assim que ouvir o primeiro toque a chamada será gratuita. Isso será o suficiente para nós.</string>
     <string name="code_validation_intro2_callerid">Após encerrar a chamada, volte aqui e toque o botão de verificação abaixo.</string>
     <string name="menu_ctx_sticky">Favorito</string>
     <string name="err_authentication_failed_callerid">A verificação não foi bem sucedida. Tente ligar para o número novamente e esperar um pouco mais.</string>
@@ -529,7 +529,7 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
     <string name="menu_encryption">Criptografia</string>
     <string name="title_disable_encryption">Desabilitar a criptografia para esta conversa?</string>
     <string name="msg_disable_encryption">Todas as novas mensagens enviadas para essa conversa NÃO serão criptografadas.
-Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.</string>
+\nDesative a criptografia apenas se o seu contato não posuir uma chave pessoal.</string>
     <string name="menu_disable_encryption">Desabilitar</string>
     <string name="group_command_users_added">Usuários adicionados:</string>
     <string name="group_command_users_removed">Usuários removidos:</string>
@@ -563,7 +563,7 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="err_location_no_providers">Não existe nenhuma fonte de localização. A localização atual não estará disponível.</string>
     <string name="err_location_access_unknown_error">Não foi possível solicitar a ativação de serviços de localização.</string>
     <string name="msg_location_disabled">É necessário acessar a localização. Pressione OK para ir às configurações e habilitá-la.</string>
-    <string name="menu_open_map">Abrir no Maps</string>
+    <string name="menu_open_map">Abrir nos Mapas</string>
     <string name="menu_map">Mapa</string>
     <string name="menu_satellite">Satélite</string>
     <string name="pref_location_settings">Localização</string>
@@ -611,8 +611,7 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="err_contacts_denied">O Kontalk precisa acessar os contatos para funcionar corretamente. Como ele vai saber com quem você pode conversar?
 \nVocê pode permitir o acesso aos contatos a partir das configurações do Android.</string>
     <string name="warn_contacts_denied">Você negou acesso aos seus contatos. Você não poderá ver as alterações dos contatos aqui.</string>
-    <string name="err_storage_denied">O Kontalke precisa acessar o armazenamento local para salvar mídias.
-\nVocê pode permitir o acesso ao armazenamento local a partir das configurações do Android.</string>
+    <string name="err_storage_denied">O Kontalk precisa acessar o armazenamento local para salvar mídias.</string>
     <string name="permission_messages_label">Acesso às mensagens do Kontalk</string>
     <string name="permission_messages_description">Pode ler e escrever no banco de dados de mensagens do Kontalk</string>
     <string name="permission_users_label">Acesso às informações de usuários do Kontalk</string>
@@ -679,4 +678,27 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="menu_switch_contacts">Contatos</string>
     <string name="save_attachment">Salvar anexo</string>
     <string name="pref_account_settings_system">Administre a conta</string>
+    <string name="showcase_composer_toolbar_group_message">Toque na barra de ferramentas para visualizar os membros e editar seu grupo.</string>
+    <string name="showcase_composer_toolbar_group_title">Informações sobre o grupo</string>
+    <string name="showcase_composer_toolbar_single_message">Toque na barra de ferramentas para visualizar as informações de contato.</string>
+    <string name="showcase_composer_toolbar_single_title">Informações de contato</string>
+    <string name="showcase_composer_attach_message">Você pode compartilhar fotos, gravações e muito mais.</string>
+    <string name="showcase_composer_attach_title">Não apenas texto</string>
+    <string name="showcase_conversations_dark_mode_message">Você pode habilitar o tema escuro em Configurações &gt; Aparência.</string>
+    <string name="showcase_conversations_dark_mode_title">Tema oscuro</string>
+    <string name="showcase_conversations_compose_message">Use este botão para abrir uma conversa com alguém.</string>
+    <string name="showcase_conversations_compose_title">Iniciar bate-papo</string>
+    <string name="msg_hints_reset">Reiniciar as dicas de tutorial.</string>
+    <string name="pref_title_reset_hints">Mostrar novamente dicas de tutorial do aplicativo</string>
+    <string name="pref_reset_hints">Reiniciar dicas</string>
+    <string name="notify_summary_download_permission_denied_error">Toque para saber mais.</string>
+    <string name="notify_title_download_permission_denied_error">Permissão exigida</string>
+    <string name="notify_ticker_download_permission_denied_error">É necessário conceder permissão para baixar a mídia</string>
+    <plurals name="msg_storage_attachment_saved">
+        <item quantity="one">Anexo foi salvo no armazenamento externo.</item>
+        <item quantity="other">Anexos foram salvos no armazenamento externo.</item>
+    </plurals>
+    <string name="err_storage_attachment_some">Alguns anexos não foram salvos devido aos erros.</string>
+    <string name="err_storage_attachment_single">Não foi possível guardar anexo.</string>
+    <string name="err_storage_photo_gallery">Não foi possível salvar sua foto na galeria.</string>
 </resources>
