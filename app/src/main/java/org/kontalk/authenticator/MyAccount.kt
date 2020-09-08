@@ -68,7 +68,7 @@ class MyAccount (val systemAccount: Account, private val accountManager: Account
     fun isSelfJID(bareJid: BareJid): Boolean = bareJid.equals(selfJID)
 
     fun isNetworkJID(bareJid: BareJid): Boolean {
-        return serverList.first { it.network.equals(bareJid.domain.toString(), true) } != null
+        return serverList.firstOrNull { it.network.equals(bareJid.domain.toString(), true) } != null
     }
 
     fun createLocalJID(localpart: String): String {
