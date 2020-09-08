@@ -663,13 +663,14 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             return;
         }
 
-        // no roster entry found, request subscription
+        // no roster entry found, request subscription (only for local networks)
+        if (Kontalk.get().getDefaultAccount().isNetworkJID(event.jid.asBareJid())) {
+            // pre-approve our presence and request subscription
+            mServiceBus.post(new PreapproveSubscriptionRequest(event.jid));
+            mServiceBus.post(new SubscribeRequest(event.jid));
 
-        // pre-approve our presence and request subscription
-        mServiceBus.post(new PreapproveSubscriptionRequest(event.jid));
-        mServiceBus.post(new SubscribeRequest(event.jid));
-
-        setStatusText(context.getString(R.string.invitation_sent_label));
+            setStatusText(context.getString(R.string.invitation_sent_label));
+        }
     }
 
     /** Sends a subscription request for the current peer. */
