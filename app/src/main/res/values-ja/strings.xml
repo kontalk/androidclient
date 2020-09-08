@@ -692,4 +692,6 @@ http://kontalk.org/</string>
     <string name="contacts_list_recents_title">最近のチャット</string>
     <string name="save_attachment">添付ファイルを保存</string>
     <string name="pref_account_settings_system">アカウントの管理</string>
+    <string name="notification_text_registration_running">登録しています</string>
+    <string name="notification_ticker_registration_running">Kontalk の登録を行なっています</string>
 </resources>
