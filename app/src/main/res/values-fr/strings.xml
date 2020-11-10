@@ -469,4 +469,34 @@
     <string name="save_attachment">Enregistrer la pièce jointe</string>
     <string name="code_validation_intro3">Veuillez noter que le SMS ou l\'appel peuvent provenir d\'un numéro à l\'étranger.</string>
     <string name="pref_account_settings_system">Paramétrer le compte</string>
+    <string name="menu_satellite">Satellite</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps n\'est pas disponible, utilisation d\'OpenStreetMap pas défaut.</string>
+    <string name="your_position">Vous</string>
+    <string name="loading">Chargement...</string>
+    <string name="kilometers_away">à %.2f km de distance</string>
+    <string name="meters_away">à %d m de distance</string>
+    <string name="accurate_to">Précise à %1$s mètres près</string>
+    <string name="send_location">Envoyez votre localisation actuelle</string>
+    <string name="send_selected_location">Envoyez la localisation choisie</string>
+    <string name="places_nearby">Endroits proches</string>
+    <string name="location_no_result">Pas de résultats</string>
+    <string name="title_passphrase_request">"Mot de passe de la clé personnelle "</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_title_emoji_converter">Convertir automatiquement des smileys textes en emojis</string>
+    <string name="pref_emoji_converter">Convertir les smileys en emojis</string>
+    <string name="seen_group_typing_label_more">%d personnes écrivent…</string>
+    <string name="seen_group_typing_label_two">%1$s et %2$s écrivent…</string>
+    <string name="seen_group_typing_label_one">%s écrit...</string>
+    <string name="seen_offline_label">hors ligne</string>
+    <string name="menu_encryption">Chiffrer</string>
+    <string name="menu_set_group_subject">Définir le sujet du groupe</string>
+    <string name="menu_start_group">Démarrer un groupe</string>
+    <string name="text_archived_conversations_empty">Pour archiver les conversations, sélectionnez-les dans l\'écran principal et utilisez le bouton <b>archive</b> dans la barre des outils.</string>
+    <string name="person_me">Moi</string>
+    <string name="msg_register_confirm_number2">Vérifiez, s\'il vous plaît, que le numéro est correct.</string>
+    <string name="pref_push_notifications_title_default">Les notifications \"push\" sont une technologie assistée par le serveur afin d\'économiser la batterie. Cela n\'affecte pas la transmission du message en temps réel.
+\n
+\nQuand désactivé, le comportement de connexion de Kontalk peut être ajusté finement dans l\'écran de réglage des paramètres.</string>
+    <string name="location_message">Emplacement du message</string>
 </resources>
