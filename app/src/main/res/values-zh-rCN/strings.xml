@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
      Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
@@ -14,10 +14,9 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
- -->
-<resources>
-  <string name="app_name">Kontalk</string>
-<string name="app_description">社区驱动的即时消息网络</string>
+ --><resources>
+    <string name="app_name">Kontalk</string>
+    <string name="app_description">社区驱动的即时消息网络</string>
     <string name="service_name">消息中心</string>
     <string name="authenticator_name">验证服务</string>
     <string name="sync_service_name">同步联系人</string>
@@ -47,12 +46,12 @@
     <string name="hint_validation_name">你的姓名</string>
     <string name="hint_validation_number">你的电话号码</string>
     <string name="hint_validation_code">验证码</string>
-    <string name="warn_invalid_number">请输入一个有效的手机号码。</string>
+    <string name="warn_invalid_number">请输入有效的手机号码。</string>
     <string name="msg_validating_phone">正在请求注册……</string>
     <string name="msg_importing_key">正在导入个人密匙……</string>
     <string name="title_confirm_cancel_registration">取消注册？</string>
     <string name="confirm_cancel_registration">若你返回，你将不得不重新开始注册。如果你需要切换至另一个应用，请按下设备上面的主页键。</string>
-    <string name="msg_initializing">正在注册到Kontalk网络……</string>
+    <string name="msg_initializing">正在注册到 Kontalk 网络……</string>
     <string name="msg_authenticated">已经注册到网络！</string>
     <string name="share">分享</string>
     <string name="resend">重新发送</string>
@@ -69,7 +68,7 @@
     <string name="confirm_delete_thread">删除聊天</string>
     <string name="confirm_will_delete_thread">整个聊天记录将被清空。</string>
     <string name="new_messages">新消息</string>
-    <string name="only_one_account_supported">仅支持一个Kontalk账户。</string>
+    <string name="only_one_account_supported">仅支持一个 Kontalk 账户。</string>
     <string name="hint_enter_text">这里输入你的消息</string>
     <string name="hint_type_to_compose">输入以撰写</string>
     <string name="hint_open_kbd_to_compose">打开键盘以撰写消息</string>
@@ -96,7 +95,7 @@
     <string name="size_unknown">（未知）</string>
     <string name="title_file_info">文件信息</string>
     <string name="pref_restart_msgcenter">重启消息中心</string>
-    <string name="pref_title_restart_msgcenter">如果Kontalk不能正常工作请使用它</string>
+    <string name="pref_title_restart_msgcenter">如果 Kontalk 不能正常工作，请使用它</string>
     <string name="pref_idle_time">闲置多久断线</string>
     <string name="pref_title_idle_time">非活动时断线前需要等待的时间</string>
     <string name="pref_wakeup_time">重新连接到服务器</string>
@@ -117,7 +116,7 @@
     <string name="pref_hide_presence">隐身</string>
     <string name="pref_title_on_hide_presence">用户将无法看到你在线</string>
     <string name="pref_title_off_hide_presence">用户将看到你在线，以及最后一次连接的时间</string>
-    <string name="contact_not_registered">看起来联系人并没有在Kontalk网络注册。</string>
+    <string name="contact_not_registered">看来此联系人并没有在 Kontalk 网络注册。</string>
     <string name="error_store_outbox">无法将消息存储到发件箱。或许你的存储器空间已经满了？</string>
     <string name="error_delete_thread">无法删除讨论。</string>
     <string name="error_delete_message">无法删除消息。</string>
@@ -149,10 +148,10 @@
     <string name="err_validation_retry_later">尝试次数过多。请等待数分钟后重试。</string>
     <string name="msg_validation_canceled">验证取消。但是你会收到短信验证。</string>
     <string name="err_validation_error">验证期间发生了一个错误。请稍后重试。</string>
-    <string name="err_validation_nonetwork">没有可用的因特网连接。Kontalk需要一个活动的因特网连接才能工作。</string>
+    <string name="err_validation_nonetwork">没有可用的因特网连接。Kontalk 需要活动的因特网连接才能工作。</string>
     <string name="err_validation_network_error">无法连接到服务器。请稍后重试。</string>
     <string name="err_validation_server_not_supported">选择的服务器不支持注册。请在设置页面设置新的服务器。</string>
-    <string name="err_validation_user_exists"><b>你使用的手机号码已经被注册到了Kontalk.</b>如果你已经注册了另一个设备，继续注册将会使原账户从Kontalk网络注销。如果你准备注册到你的新设备，请选择传送账户。</string>
+    <string name="err_validation_user_exists"><b>你使用的手机号码已经被注册到了 Kontalk。</b>如果你已经注册了另一个设备，继续注册将会使原账户从 Kontalk 网络注销。如果你准备注册到你的新设备，请选择传送账户。</string>
     <string name="text_encrypted">（已加密）</string>
     <string name="peer_unknown">（未知）</string>
     <string name="msg_draft_saved">消息已被存为草稿。</string>
@@ -177,23 +176,25 @@
     <string name="msg_invalid_code">请输入有效的代码。</string>
     <string name="title_nonetwork">没有因特网连接</string>
     <string name="title_fallback">遇见问题？</string>
-    <string name="msg_fallback">我们将会尝试另一种办法验证你的手机号码。</string>
+    <string name="msg_fallback">我们将会尝试通过另一种办法验证你的手机号码。</string>
     <string name="title_no_name">你的姓名</string>
     <string name="msg_no_name">请输入用户名。</string>
     <string name="menu_refresh">刷新</string>
     <string name="menu_invite">邀请用户</string>
     <string name="title_error">错误</string>
-    <string name="msg_do_refresh">使用菜单 &gt; 刷新来更新联系人列表。</string>
+    <string name="msg_do_refresh">使用「菜单 &gt; 刷新」来更新联系人列表。</string>
     <string name="msg_sync_progress">正在刷新联系人列表……</string>
     <string name="err_sync_failed">无法刷新联系人列表。请稍后重试。</string>
     <string name="err_sync_nonetwork">没有有效网络。请稍后重试。</string>
-    <string name="text_invite_message">嘿！快来谷歌Play商店来瞅瞅Kontalk吧，一个免费的即时消息应用！http://kontalk.org/</string>
-    <string name="text_contacts_empty">新用户将被自动添加到这个列表。\n\n使用<b>菜单</b> &gt; <b>邀请用户</b>以便将邀请的消息发送给某个人。</string>
+    <string name="text_invite_message">嘿！快来谷歌Play商店瞅瞅 Kontalk 吧，一个免费的即时消息应用！ http://kontalk.org/</string>
+    <string name="text_contacts_empty">新用户将被自动添加到这个列表。
+\n
+\n使用「<b>菜单</b> &gt; <b>邀请用户</b>」以便将邀请的消息发送给某个人。</string>
     <string name="text_conversations_empty">使用下面的<b>新消息</b>按钮开始撰写消息。</string>
     <string name="notify_ticker_external_storage">没有外置存储器</string>
     <string name="notify_text_external_storage">无法写入外置存储器。</string>
     <string name="title_user_not_found">找不到用户</string>
-    <string name="message_user_not_found">联系人看起来并没有在Kontalk上注册。然而你可以试着与用户联系或者发送给他/她邀请信息。</string>
+    <string name="message_user_not_found">此联系人看来并没有在 Kontalk 上注册。然而你可以试着与用户联系或者发送给他/她邀请信息。</string>
     <string name="yes_user_not_found">不管怎样都联系用户</string>
     <string name="no_user_not_found">发送邀请</string>
     <string name="pref_appearance_settings">外观</string>
@@ -212,7 +213,7 @@
     <string name="attachment_download">附件下载</string>
     <string name="attachment_upload">附件上传</string>
     <string name="seen_moment_ago_label">刚刚</string>
-    <string name="seen_online_label">活动</string>
+    <string name="seen_online_label">活跃</string>
     <string name="seen_typing_label">正在输入……</string>
     <string name="invitation_sent_label">未处理的邀请</string>
     <string name="pref_custom_background">自定义背景</string>
@@ -225,7 +226,6 @@
     <string name="serverlist_update_nodata">找不到有用的服务器列表。</string>
     <string name="serverlist_update_nonetwork">没有网络。请稍后重试。</string>
     <string name="serverlist_update_offline">离线模式已开启。</string>
-
     <string name="pref_vibrate_label_always">总是</string>
     <string name="pref_vibrate_label_silent">仅当静音模式</string>
     <string name="pref_vibrate_label_never">永不</string>
@@ -253,7 +253,6 @@
     <string name="pref_wakeup_time_label_30m">30分钟</string>
     <string name="pref_wakeup_time_label_1h">1个小时</string>
     <string name="pref_wakeup_time_label_3h">3个小时</string>
-
     <string name="pref_remove_prefix">拨号首码</string>
     <string name="pref_change_passphrase">修改个人密匙的密码</string>
     <string name="pref_title_remove_prefix">Kontalk中移除某些拨号首码，用以正确匹配手机号码</string>
@@ -263,52 +262,39 @@
     <string name="err_import_keypair_failed">个人密匙导入失败。</string>
     <string name="err_import_keypair_uid_mismatch">导入的密匙与你所输入的电话号码不匹配。</string>
     <string name="title_passphrase">密码</string>
-
     <string name="msg_status_sending">正在发送</string>
     <string name="msg_status_sent">已发送</string>
     <string name="msg_status_notaccepted">已遭拒绝</string>
     <string name="msg_status_notdelivered">未送达</string>
     <string name="msg_status_delivered">已送达</string>
     <string name="msg_status_encrypted">已加密</string>
-
     <string name="pref_balloons">聊天气泡主题</string>
-
     <string name="attachment_picture">相册</string>
     <string name="attachment_contact">联系人</string>
     <string name="attachment_audio">音频</string>
-
     <string name="chooser_send_picture">发送图片</string>
-    <string name="chooser_error_no_camera">没有外置存储设备。摄像头拍照功能将禁用。</string>
-
+    <string name="chooser_error_no_camera">无法写入图片文件。从相机拍摄照片将不会启用。</string>
     <string name="chooser_select_link">选择动作</string>
-
     <string name="status_activity_title">状态消息</string>
     <string name="hint_status_entry">这里输入你的状态消息</string>
     <string name="header_recent_status">最近使用过的状态消息</string>
-
     <string name="title_offline_mode_warning">离线模式</string>
     <string name="message_offline_mode_warning">直到你返回在线模式，Kontalk在离线模式下将不会连接到服务器。你将不能发送或者接收消息，用户将看到你离线。</string>
-
     <string name="warning_offline_mode">离线模式已激活。待你重新在线时，消息将被发送。</string>
     <string name="going_offline">正在进入离线。</string>
     <string name="going_online">正在进入在线。</string>
-
     <string name="pref_other">其它</string>
     <string name="pref_help">帮助</string>
     <string name="pref_donate">捐赠</string>
     <string name="pref_about">关于</string>
-
     <string name="title_about">关于</string>
     <string name="title_donation">捐赠</string>
     <string name="title_credits">榜上有名</string>
-
     <string name="about_version">%1$s (%2$d)</string>
-
     <string name="social_twitter">Twitter</string>
     <string name="social_googleplus">Google Plus</string>
     <string name="social_facebook">Facebook</string>
     <string name="social_identica">Identi.ca</string>
-
     <string name="donate_text">Kontalk需要资金保持运营。请考虑捐赠，即使数额微不足道。</string>
     <string name="title_bitcoin_dialog">Bitcoin</string>
     <string name="text_bitcoin_dialog">Bitcoin地址:\n%s</string>
@@ -316,21 +302,17 @@
     <string name="donate_paypal">PayPal</string>
     <string name="donate_bitcoin">Bitcoin</string>
     <string name="donate_flattr">Flattr</string>
-
     <string name="msg_generating_keypair">正在后台生成个人密匙。</string>
     <string name="msg_gen_keypair_complete">个人密匙重新生成完毕。</string>
     <string name="notify_gen_keypair_ticker">正在生成个人密匙……</string>
     <string name="notify_gen_keypair_title">正在生成个人密匙</string>
     <string name="notify_gen_keypair_text">你可以继续正在工作。</string>
-
     <string name="msg_xmpp_upgrading">正在升级……</string>
     <string name="title_no_personal_key">没有个人密匙</string>
     <string name="msg_no_personal_key">当前有一个个人密匙不存在（可能是因为你刚刚有过升级）。除非你不再生成个人密匙，否则你将无法登进Kontalk网络。请关闭Kontalk重新打开，输入你的用户名。</string>
     <string name="msg_keypair_exported">个人密匙与登录证书已被导出至外置存储器。</string>
-
     <string name="security_status_good">良</string>
     <string name="security_status_bad">差</string>
-
     <string name="security_error_invalid_signature">" （无效的签名）"</string>
     <string name="security_error_invalid_sender">" （无效的发送人）"</string>
     <string name="security_error_invalid_recipient">" （无效的收件人）"</string>
@@ -339,7 +321,6 @@
     <string name="security_error_decrypt_failed">" （解密已失败）"</string>
     <string name="security_error_integrity_check">" （完整性检查）"</string>
     <string name="security_error_public_key_unavail">" （公共密匙不可用）"</string>
-
     <string name="invite_notification">正在邀请你聊天</string>
     <string name="title_invitation">聊天邀请</string>
     <string name="text_invitation1">请求人：</string>
@@ -347,56 +328,40 @@
     <string name="button_accept">接受</string>
     <string name="button_block">禁止</string>
     <string name="button_identity">验证</string>
-
     <string name="msg_connecting_iab">正在连接至Play商店……</string>
     <string name="msg_iab_thankyou">谢谢！</string>
     <string name="msg_iab_thankyou_warning">出了点故障，但捐赠已收到。谢谢你！</string>
-
     <string name="iab_error_setup">设置应用内部计费过程发生错误 （%d）</string>
     <string name="iab_error_query">应用内部支付清单查询已失败。（%d）</string>
-
     <string name="copy_clipboard">拷贝到剪贴板</string>
     <string name="bitcoin_clipboard_copied">Bitcoin地址已被拷贝到剪贴板。</string>
-
     <string name="warn_no_personal_key">无法载入个人密匙。强制从设置中禁用加密发送消息。</string>
     <string name="warn_no_public_key">无法为该用户找到公共密匙。尝试刷新你的联系人列表或者从设置强制禁用加密发送消息。</string>
     <string name="warn_encryption_failed">无法加密消息。强制从设置中禁用加密发送消息。</string>
     <string name="warn_not_subscribed">无法发送消息。用户还没有接受你的邀请。</string>
-
     <string name="pref_sync_sim_contacts">从SIM卡联系人同步</string>
-
     <string name="pref_sync_invisible_contacts">包含不可见的联系人</string>
-
     <string name="pref_accept_any_certificate">接受任意SSL证书</string>
-
     <string name="pref_delete_account">删除你的账户</string>
     <string name="msg_delete_account">删除你的账户也会删掉你所有的消息记录。你在本服务器的账户将会在数星期后自动删除。</string>
     <string name="msg_delete_account_progress">正在删除你的账户……</string>
-
     <string name="msg_user_blocked">用户已经被禁止通信。</string>
     <string name="msg_user_unblocked">用户已经被解禁。</string>
     <string name="title_block_user_warning">确实要禁止该用户么？</string>
     <string name="msg_block_user_warning">你将要禁止该用户。如果你这么做的话，除非你解禁他/她，该用户将无法发送给你任何消息或是媒体文件。该用户同时也不再能看到你的状态或是上一次登陆的时间，你也将无法看到他/她的状态。负面效应是，你也无法发送任何消息或是媒体文件给他/她。</string>
     <string name="title_unblock_user_warning">确实要解禁该用户么？</string>
     <string name="msg_unblock_user_warning">你即将解禁该用户。解禁将会允许他/她给你发送消息，并且能看到你的状态和上次的登录时间。</string>
-
     <string name="notification_text_more">触摸此处了解更多</string>
-
     <string name="title_auth_error">验证错误</string>
     <string name="msg_auth_error">上一次我们尝试连接Kontalk服务器的验证已失败。可能是临时的服务器故障或者更高的概率是，服务器拒绝了你的个人密匙。我们建议你从安卓的系统设置里面删除Kontalk账户，重新注册一遍（尽管这会使得你丢失所有保存在Kontalk里的信息）。</string>
-
     <string name="warn_invite_no_app">没有有效的应用来邀请用户。</string>
-
     <string name="pref_text_enter">回车键</string>
     <string name="pref_title_text_enter">选择键盘回车键的行为</string>
-
     <string name="title_password1">密码：</string>
     <string name="title_password2">确认密码：</string>
-
     <string name="err_password_too_short">密码必须至少有%d个字符。</string>
     <string name="err_passwords_mismatch">密码不匹配！</string>
     <string name="err_password_invalid">错误的密码。</string>
-
     <string name="hint_record">触摸麦克风开始录音。</string>
     <string name="hint_ptt">触摸并按住麦克风录音。</string>
     <string name="err_change_passphrase">无法修改个人密匙的密码。</string>
@@ -407,25 +372,18 @@
     <string name="err_playing_audio">播放音频时发生错误。</string>
     <string name="err_playing_sdcard">从外置存储器读取时发生错误。</string>
     <string name="slide_to_cancel">滑动取消</string>
-
     <string name="pref_media_settings">媒体</string>
     <string name="pref_image_resize">调整图像尺寸</string>
-
     <string name="err_server_invalid_format">无效的地址格式。</string>
-
     <string name="err_no_contacts_app">联系人应用未找到。</string>
     <string name="err_no_contact">找不到联系人。</string>
-
     <string name="warning_button_details">详细信息</string>
     <string name="warning_older_version">你的好友正在使用较旧版本的Kontalk。一些特性可能无法正确工作。</string>
-
     <string name="warning_user_blocked">你禁止了该用户。</string>
-
     <string name="about_credits_devteam"><b>为你创造Kontalk的人：</b></string>
     <string name="about_credits_gfx"><b>图像/图标</b></string>
     <string name="about_credits_translators"><b>译者</b></string>
-
-<string name="app_name_offline">Kontalk （离线）</string>
+    <string name="app_name_offline">Kontalk（离线）</string>
     <string name="seen_away_label">在线</string>
     <string name="err_import_keypair_read">无法从外置存储器读取密匙。</string>
     <string name="attachment_camera">摄像头</string>
@@ -433,103 +391,79 @@
     <string name="attachment_file">文件</string>
     <string name="attachment_vcard">联系人</string>
     <string name="attachment_location">位置</string>
-
     <string name="pref_enable_notification_led">LED指示灯</string>
     <string name="pref_notification_led_color">LED指示灯颜色</string>
     <string name="pref_title_custom_background">使用以下设置挑选背景</string>
     <string name="msg_not_implemented">未实现的功能。</string>
-
     <string name="chooser_error_no_camera_app">找不到拍照应用。</string>
-
     <string name="err_keypair_export_write">无法将个人密匙写入外置存储器。</string>
     <string name="err_keypair_export_other">无法导出个人密匙。</string>
-
     <string name="pref_title_sync_sim_contacts">检查已注册用户时包含SIM卡联系人</string>
-
-    <string name="pref_title_sync_invisible_contacts">联系人应用不显示包含的联系人。当你使用DAVDroid时开启</string>
-
+    <string name="pref_title_sync_invisible_contacts">包括未在“联系人”应用中显示的联系人。 如果您使用DAVx⁵或其他联系人同步应用程序，则启用该选项</string>
     <string name="warning_public_key_changed">个人密匙已改变</string>
     <string name="title_public_key_changed_warning">个人密匙已改变</string>
     <string name="msg_public_key_changed_warning">请验证对方是否有意识地重新安装了Kontalk或是修改了密匙，否则会话将会泄密！</string>
     <string name="warning_public_key_unknown">个人密匙还未验证</string>
     <string name="title_public_key_unknown_warning">验证个人密匙</string>
     <string name="msg_public_key_unknown_warning">请验证对方的指纹是否与显示在<b>身份</b>的对话框匹配，否则会话将会泄密！</string>
-
     <string name="pref_show_blocked_users">显示被禁的用户</string>
     <string name="button_load_next_page">载入更多消息</string>
-
     <string name="mark_read">阅读</string>
     <string name="pref_media_autodownload_threshold">自动下载的最低值</string>
     <string name="pref_title_media_autodownload_threshold">低于该大小的文件总是自动下载</string>
     <string name="pref_msg_media_autodownload_threshold">输入一个以KB为单位的数值。设置成0，则永不自动下载。</string>
-
     <string name="pref_media_autodownload">自动下载</string>
     <string name="pref_media_autodownload_label_never">从不</string>
     <string name="pref_media_autodownload_label_wifi">仅在Wi-Fi</string>
     <string name="pref_media_autodownload_label_always">总是</string>
-
     <string name="text_search_results_empty">找不到消息。</string>
     <string name="chooser_error_no_gallery_app">没有图库应用。</string>
-
     <string name="menu_invite_group">添加用户</string>
     <string name="menu_set_group_subject">设置群组主题</string>
     <string name="menu_leave_group">离开群组</string>
     <string name="chooser_error_no_browser">无法使用浏览器打开链接。</string>
     <string name="text_invitation_info">（聊天申请）</string>
-
     <string name="group_untitled">未命名群组</string>
     <string name="title_group_subject">群组主题</string>
     <string name="group_command_create">群组创建于：</string>
     <string name="group_command_user_parted">%s 离开了群组。</string>
     <string name="group_command_subject">群组主题设置为：%s</string>
-
     <string name="group_command_text_create">创建了群组</string>
     <string name="group_command_text_subject">群组主题已变更</string>
     <string name="group_command_text_part">有人离开了该群组</string>
     <string name="group_command_text_add_remove">某人被添加或删除</string>
-
     <string name="learn_more">了解更多</string>
-
     <string name="title_huawei_protected_apps">华为受保护的APP</string>
     <string name="msg_huawei_protected_apps">Kontalk需要在“被保护的APP”里中启用以正常工作。</string>
     <string name="btn_huawei_protected_apps">被保护的APP</string>
-
     <plurals name="unread_messages">
-	<item quantity="other">1条未读消息</item>
-</plurals>
-
-<string name="menu_create_group">创建群组</string>
+        <item quantity="other">1条未读消息</item>
+    </plurals>
+    <string name="menu_create_group">创建群组</string>
     <string name="delete_thread_messages">删除聊天历史</string>
     <string name="pref_push_notifications_disabled">已禁用</string>
     <string name="pref_push_notifications_title_default">推送是服务器端辅助的帮助节约电量的技术。它不会影响实时的消息传送。
-
-当被禁用后，Kontalk的连接行为可以在网络设置页面精确调整。</string>
+\n
+\n被禁用后，Kontalk 的连接行为可以在网络设置页面精确调整。</string>
     <string name="pref_push_notifications_title_disabled">推送支持并没有包含在此版本。</string>
     <string name="pref_push_notifications_title_unavailable">推送并不能在该设备受支持。</string>
     <string name="pref_emoji_converter">将笑容符转换成绘文字</string>
     <string name="pref_title_emoji_converter">自动将一些文本笑容符转换成绘文字</string>
-
     <string name="pref_balloon_label_silence">静音</string>
     <string name="title_passphrase_request">个人密匙密码</string>
     <string name="err_invalid_passphrase">错误的密码。重启APP后再试一次。</string>
-
     <string name="chooser_error_no_app">没有合适的已关联APP打开该文件。</string>
-
     <string name="button_ignore">忽略</string>
     <string name="title_identity">验证</string>
     <string name="title_identity_self">验证（这是你！）</string>
-
     <string name="pref_on">开启</string>
     <string name="pref_off">关闭</string>
-
     <string name="warning_public_key_group_unverified">一些群组成员的验证信息还未被查阅。</string>
-
     <string name="about_credits_contrib"><b>贡献者</b></string>
     <string name="group_command_self_parted">你离开了群组。</string>
     <string name="group_command_text_part_self">你离开了该群组</string>
     <string name="group_command_text_part_kicked">你从该群组中被赶了出来</string>
     <string name="groupinfo_activity_title">群组详情</string>
-
     <string name="group_info_set_title">更改主题</string>
     <string name="group_info_leave">离开群组</string>
     <string name="group_info_members">群组成员</string>
@@ -537,25 +471,19 @@
     <string name="confirm_will_leave_group">离开后你将无法重新进入该群组。</string>
     <string name="leave_group_delete_messages">同时删除聊天历史</string>
     <string name="group_info_menu_remove">移除</string>
-
     <string name="title_ignore_all_identities">忽略所有的身份验证？</string>
     <string name="msg_ignore_all_identities">所有未验证的身份将被标记为忽略。</string>
     <string name="text_group_command_fallback">一条来自群组聊天的消息。你正在使用旧版本的Kontalk或者你的客户端不支持当前群组聊天的协议。请升级到最新版本！</string>
-
     <string name="status_label">"状态： "</string>
     <string name="trust_unknown">未验证</string>
     <string name="trust_ignored">已忽略</string>
     <string name="trust_verified">已验证</string>
-
     <string name="action_compose">新的聊天</string>
     <string name="action_compose_group">新的群组</string>
-
     <string name="notification_group_title">%1$s @ %2$s</string>
-
     <plurals name="unread_messages_group">
-	<item quantity="other">%1$d 个消息 @ %2$s</item>
-</plurals>
-
+        <item quantity="other">%1$d 个消息 @ %2$s</item>
+    </plurals>
     <string name="code_validation_intro_callerid">触碰下面的按钮以回拨未接通话。请注意<b>该通话必须从你注册的手机号码中发起</b>。如果你在听到第一次响铃马上挂断，那么该通话就是免费的。这对我们来说已经足够。</string>
     <string name="code_validation_intro2_callerid">结束通话后，回到该处并触碰下面的验证按钮。</string>
     <string name="err_authentication_failed_callerid">验证未成功。尝试再次呼叫该号码或者稍等一段时间。</string>
@@ -566,57 +494,42 @@
     <string name="button_private_chat">私密聊天</string>
     <string name="pref_reporting">发送匿名的使用统计</string>
     <string name="pref_title_reporting">包含崩溃报告</string>
-
     <string name="menu_ctx_sticky">收藏</string>
     <string name="menu_start_group">开始群组会话</string>
     <string name="group_command_owner_parted">群主 (%s) 离开了群组。没有人能够添加或者踢掉成员。</string>
     <string name="group_info_owner_member">群主</string>
-
     <plurals name="confirm_will_delete_threads">
-	<item quantity="other">选择的聊天会话将被删除。</item>
-</plurals>
-
+        <item quantity="other">选择的聊天会话将被删除。</item>
+    </plurals>
     <plurals name="delete_threads_leave_groups">
         <item quantity="other">同时离开群组</item>
     </plurals>
-
-<string name="pref_balloons_groups">群组聊天气球主题</string>
-
+    <string name="pref_balloons_groups">群组聊天气球主题</string>
     <string name="delete_threads_leave_any_groups">同时离开所有群组</string>
-
     <string name="delete_threads_groups_disclaimer">如果上面的复选框被选中，那么群组聊天中将只删除聊天记录。</string>
     <string name="create_group_disclaimer">请注意该群组中的每个成员之间必须是好友才能聊天。</string>
     <string name="check_dont_show_again">不再显示</string>
-
     <string name="menu_encryption">加密</string>
     <string name="title_disable_encryption">对该聊天禁用加密?</string>
     <string name="msg_disable_encryption">该聊天收到的所有消息都不会被加密。
 只推荐在您的联系人没有个人密匙的时候禁用加密。</string>
     <string name="menu_disable_encryption">禁用</string>
-
     <string name="pref_debug_log">开启调试日志</string>
     <string name="pref_send_debug_log">发送调试日志</string>
-
     <plurals name="notification_more">
-	    <item quantity="other">顶%d</item>
+        <item quantity="other">顶%d</item>
     </plurals>
-
     <plurals name="context_selected">
-	    <item quantity="other">%d已被选择</item>
+        <item quantity="other">%d已被选择</item>
     </plurals>
-
     <plurals name="group_people">
-	    <item quantity="other">%d人</item>
+        <item quantity="other">%d人</item>
     </plurals>
-
-<string name="notify_text_decryption_error">加密已失败</string>
+    <string name="notify_text_decryption_error">加密已失败</string>
     <string name="group_command_users_added">添加的用户：</string>
     <string name="group_command_users_removed">移除的用户：</string>
-
     <string name="group_info_menu_add_again">再次添加</string>
-
     <string name="status_notsubscribed">不允许的/被屏蔽的</string>
-
     <string name="code_validation_intro3">请注意该信息或者来电可能来自一个海外号码。</string>
     <string name="reply">回复</string>
     <string name="msg_register_confirm_number1">我们将会验证手机号：</string>
@@ -625,11 +538,8 @@
     <string name="title_doze_mode">电池优化</string>
     <string name="msg_doze_mode">为使电池优化功能正常工作，Kontalk需要被列入白名单。我们保证不会吃光你的电量。</string>
     <string name="btn_request_doze_mode_whitelist">请求权限</string>
-
     <string name="registration_poweredby">技术提供由</string>
-
     <string name="audio_duration_max">%1$s / %2$s</string>
-
     <string name="menu_import_device">从另一个设备注册</string>
     <string name="pref_account_settings">账户</string>
     <string name="open_conversation">查看</string>
@@ -645,7 +555,6 @@
     <string name="seen_group_typing_label_more">%d 人正在输入……</string>
     <string name="pref_maps_google_label">Google Maps</string>
     <string name="pref_maps_osm_label">OpenStreetMap</string>
-
     <string name="notification_location">已向你发送了位置</string>
     <string name="location_no_result">没有结果</string>
     <string name="places_nearby">附近有什么</string>
@@ -661,40 +570,29 @@
     <string name="err_location_access_unknown_error">无法请求到位置服务。</string>
     <string name="err_location_permission">获取位置被拒绝。</string>
     <string name="msg_location_disabled">我们需要获取位置，确认选择后前去设置界面并启用它。</string>
-
     <string name="menu_open_map">在地图中打开</string>
     <string name="menu_map">地图</string>
     <string name="menu_satellite">卫星</string>
-
     <string name="pref_server_messages">接收服务器信息</string>
     <string name="pref_title_server_messages">允许服务器管理员的消息推送，禁用该特性将导致错过重要信息。</string>
-
     <string name="notification_ticker_service_running">Kontalk正在后台运行</string>
     <string name="notification_text_service_running">触摸以打开</string>
-
     <string name="err_audio_record_permission">麦克风访问被拒绝。</string>
     <string name="err_audio_record_writing_permission">外置存储器访问被拒绝。</string>
     <string name="pref_location_settings">位置</string>
     <string name="pref_maps_service">服务提供商</string>
-
     <string name="msg_request_doze_failed_manual">请在下一个屏幕将Kontalk标记为未优化的。</string>
     <string name="msg_request_doze_failed_all">找不到电池优化设置，将切回系统设置界面。</string>
-
     <string name="pref_foreground_service">启用前台服务</string>
-    <string name="pref_title_foreground_service">如果你想让Kontalk驻扎在后台时占用较低资源可以启动该选项，这样就会显示一个类似告示贴的提醒。</string>
+    <string name="pref_title_foreground_service">如果你想在后台资源不足时让 Kontalk 保持活动，可以启动该选项，会在通知栏显示一条固定通知。</string>
     <string name="pref_title_foreground_service_mandatory">Kontalk需要这些设置才能正常工作</string>
-
     <string name="menu_import_messages">导入信息</string>
-
     <string name="pref_copy_database">拷贝数据库</string>
     <string name="msg_copy_database_success">数据库拷贝到了：%s</string>
     <string name="msg_copy_database_failed">数据库拷贝失败：%s</string>
-
     <string name="registration_accept_terms_title">接受服务条款？</string>
     <string name="registration_accept_terms_text">位于&lt;b&gt;%1$s&lt;/b&gt;的服务器正在申请&lt;a href=%2$s&gt;接受服务条款&lt;/a&gt;。</string>
-
     <string name="pref_service_terms">服务条款</string>
-
     <string name="pref_register_device">注册设备</string>
     <string name="register_device_title">注册设备</string>
     <string name="register_device_instructions">扫描下面的二维码或者手动从其它设备输入下列数据。</string>
@@ -702,7 +600,6 @@
     <string name="register_device_requesting">正在申请注册……</string>
     <string name="register_device_nonetwork">没有网络，请稍后重试。</string>
     <string name="register_device_offline">离线模式已启用。</string>
-
     <string name="import_device_title">导入账户</string>
     <string name="import_device_instructions">输入其它设备出现的申请数据。</string>
     <string name="import_device_hint_account">手机号码</string>
@@ -715,69 +612,85 @@
     <string name="import_device_btn_scan">扫描二维码</string>
     <string name="import_device_btn_input">手动输入</string>
     <string name="import_device_message">要在在另一设备打开Kontalk，选择菜单&gt;设置&gt;维护&gt;注册设备后将会显示一个秘码和条形码。</string>
-
     <string name="btn_device_overwrite">我丢失了旧帐户或者设备</string>
     <string name="btn_device_import">传送账户</string>
-
     <string name="contactinfo_activity_title">联系人信息</string>
     <string name="contactinfo_last_seen">最后上线 %s</string>
     <string name="contactinfo_phone_number">手机号码</string>
     <string name="contactinfo_fingerprint">指纹</string>
     <string name="contactinfo_userid">用户ID</string>
-
     <string name="btn_reply_cancel_description">取消回复</string>
     <string name="reply_message_deleted">信息已被删除。</string>
-
     <string name="title_archived_threads">归档的信息</string>
     <string name="footer_archived_threads">归档的信息 （%d）</string>
-
     <string name="err_validation_contacts_denied">Kontalk需要或者获取联系人的权限才能正确工作，否则如何才能知道你和谁聊天呢？你可以现在取消，但是一旦你注册成功后还会被再次提醒。</string>
     <string name="err_contacts_denied">Kontalk需要或者获取联系人的权限才能正确工作，否则如何才能知道你和谁聊天呢？你可以现在取消，但是一旦你注册成功后还会被再次提醒。</string>
     <string name="warn_contacts_denied">你禁用了获取联系人的权限，将不再在这里看到联系人的变动。</string>
     <string name="err_camera_scanner_denied">为了从别的设备扫描二维码，我们需要取得你的摄像头权限。</string>
     <string name="err_camera_picture_denied">我们需要获取你的摄像头权限来拍照。</string>
-
     <string name="err_audio_or_storage_denied">我们需要获取麦克风权限来录制你的声音，以及外置存储器权限来保存你的声音。</string>
-
-    <string name="err_storage_denied">Kontalk需要获取本地存储器权限来存储媒体文件，你可以从安卓设置里面允许这项权限。</string>
+    <string name="err_storage_denied">Kontalk需要获取本地存储器权限来存储媒体文件。</string>
     <string name="err_storage_denied_interactive">Kontalk需要从本地存储器里保存媒体文件，我们现在请求获取。</string>
-
     <string name="err_location_denied">如果你想要分享位置，我们需要取得权限。</string>
-
     <string name="err_validation_phone_state_denied">如果你允许Kontalk处理电话呼叫，它将会自动检测到你的电话号码。Kontalk不会使用获取的权限干一些其它的事情。</string>
-
     <string name="notify_ticker_download_permission_denied_error">下载媒体文件需要获取权限</string>
     <string name="notify_title_download_permission_denied_error">需要权限</string>
     <string name="notify_summary_download_permission_denied_error">触摸了解更多。</string>
-
     <string name="err_emoji_disabled_in_multiwindow">无法在多窗口模式使用Emoji表情。</string>
-
     <string name="permission_messages_label">获取Kontalk信息</string>
     <string name="permission_messages_description">允许读取和写入Kontalk信息数据库</string>
     <string name="permission_users_label">获取Kontalk用户信息</string>
     <string name="permission_users_description">允许从Kontalk用户数据库和Keyring里面读取写入</string>
-
     <string name="pref_enable_outgoing_sound">发出信息后播放声音</string>
-
     <string name="contact_name_server">你的服务器</string>
-
     <string name="notify_incoming_message_channel_name">信息</string>
     <string name="notify_incoming_message_channel_description">接收到的信息</string>
-
     <string name="notify_media_download_channel_name">下载</string>
     <string name="notify_media_download_channel_description">媒体下载</string>
-
     <string name="notify_media_upload_channel_name">上传</string>
     <string name="notify_media_upload_channel_description">媒体上传</string>
-
     <string name="notify_message_center_channel_name">信息中心</string>
     <string name="notify_message_center_channel_description">（必须）使Kontalk服务常驻</string>
-
     <string name="notify_other_channel_name">其它</string>
     <string name="notify_other_channel_description">其它提示</string>
-
     <plurals name="group_people_online">
-	<item quantity="other">%d 在线</item>
-</plurals>
-
+        <item quantity="other">%d 在线</item>
+    </plurals>
+    <string name="showcase_composer_toolbar_group_message">点击工具栏以查看成员并编辑您的群组。</string>
+    <string name="showcase_composer_toolbar_group_title">群组信息</string>
+    <string name="showcase_composer_toolbar_single_message">点击工具栏以查看联系人信息。</string>
+    <string name="showcase_composer_toolbar_single_title">联系人信息</string>
+    <string name="showcase_composer_attach_message">您可以共享图片，录音和更多。</string>
+    <string name="showcase_composer_attach_title">不仅是文本</string>
+    <string name="showcase_conversations_dark_mode_message">您可以在“设置”&gt;“外观”中启用深色主题。</string>
+    <string name="showcase_conversations_dark_mode_title">暗黑模式</string>
+    <string name="showcase_conversations_compose_message">使用此按钮开始与某人的聊天。</string>
+    <string name="showcase_conversations_compose_title">开始聊天</string>
+    <string name="msg_hints_reset">教程提示已重置。</string>
+    <string name="pref_title_reset_hints">在整个应用中再次显示教程提示</string>
+    <string name="pref_reset_hints">重置提示</string>
+    <plurals name="msg_storage_attachment_saved">
+        <item quantity="one">附件被保存到外部存储。</item>
+        <item quantity="other"/>
+    </plurals>
+    <string name="err_storage_attachment_some">由于错误，某些附件未被保存。</string>
+    <string name="err_storage_attachment_single">无法保存附件。</string>
+    <string name="err_camera_picture_storage_denied">我们需要访问您的相机才能拍照。 另外，如果您授予对存储的写入权限，我们会自动将图片发布到您的图库。</string>
+    <string name="err_storage_photo_gallery">无法将您的照片保存到图库。</string>
+    <string name="warn_external_contacts_denied">您拒绝应用访问联系人。 您必须手动打开想要的聊天。</string>
+    <string name="ptt_button">录音</string>
+    <string name="notification_text_registration_running">注册进行中</string>
+    <string name="notification_ticker_registration_running">Kontalk注册进行中</string>
+    <string name="chooser_error_share_denied">对原始文件的访问被拒绝。</string>
+    <string name="chooser_error_no_share_app">没有合适的应用程序来分享该文件。</string>
+    <string name="pref_uitheme_label_dark">暗黑</string>
+    <string name="pref_uitheme_label_light">明亮</string>
+    <string name="pref_uitheme_label_default">由省电模式设定</string>
+    <string name="pref_ui_theme">主题</string>
+    <string name="text_contacts_recents_empty">最近的聊天将出现在这里。你可以通过使用上方按钮&lt;/b&gt;切换到联系人&lt;/b&gt;.<b>switch to contacts</b> by using the button above.</string>
+    <string name="menu_switch_recents">最近</string>
+    <string name="menu_switch_contacts">联系人</string>
+    <string name="contacts_list_recents_title">最近对话</string>
+    <string name="save_attachment">保存附件</string>
+    <string name="pref_account_settings_system">管理账户</string>
 </resources>

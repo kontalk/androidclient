@@ -702,4 +702,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="pref_uitheme_label_light">Hell</string>
     <string name="pref_uitheme_label_default">Wird vom Batteriesparmodus eingestellt</string>
     <string name="pref_ui_theme">Thema</string>
+    <string name="notification_text_registration_running">Registrierung läuft</string>
+    <string name="notification_ticker_registration_running">Kontalk-Registrierung läuft</string>
 </resources>
