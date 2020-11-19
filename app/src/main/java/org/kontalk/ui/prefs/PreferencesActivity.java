@@ -134,17 +134,24 @@ public final class PreferencesActivity extends BasePreferencesActivity
 
     @Override
     public void onFolderSelection(@NonNull FolderChooserDialog folderChooserDialog, @NonNull File folder) {
-        try {
-            AccountFragment f = (AccountFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.container);
-            f.exportPersonalKey(this,
-                new FileOutputStream(new File(folder, PersonalKeyPack.KEYPACK_FILENAME)));
+        final String tag = folderChooserDialog.getTag();
+        if (tag.equals(CopyDatabasePreference.class.getName())) {
+            CopyDatabasePreference.copyDatabase(this,
+                new File(folder, CopyDatabasePreference.DBFILE_NAME));
         }
-        catch (FileNotFoundException e) {
-            Log.e(PreferencesFragment.TAG, "error exporting keys", e);
-            Toast.makeText(this,
-                R.string.err_keypair_export_write,
-                Toast.LENGTH_LONG).show();
+        else if (tag.equals(AccountFragment.class.getName())) {
+            try {
+                AccountFragment f = (AccountFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.container);
+                f.exportPersonalKey(this,
+                    new FileOutputStream(new File(folder, PersonalKeyPack.KEYPACK_FILENAME)));
+            }
+            catch (FileNotFoundException e) {
+                Log.e(PreferencesFragment.TAG, "error exporting keys", e);
+                Toast.makeText(this,
+                    R.string.err_keypair_export_write,
+                    Toast.LENGTH_LONG).show();
+            }
         }
     }
 

@@ -19,16 +19,25 @@
 package org.kontalk.ui.prefs;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+
+import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
 import android.util.AttributeSet;
 import android.widget.Toast;
 
+import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.util.DataUtils;
+import org.kontalk.util.MediaStorage;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,12 +46,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
+
 
 /**
  * Preference for copying the messages database to the external storage.
  * @author Daniele Ricci
  */
 public class CopyDatabasePreference extends Preference {
+    private static final String TAG = Kontalk.TAG;
+
+    public static final int REQUEST_COPY_DATABASE = Activity.RESULT_FIRST_USER + 4;
+
+    private static final String DBFILE_MIME = "application/x-sqlite3";
+    public static final String DBFILE_NAME = "kontalk-messages.db";
+
+    private Fragment mFragment;
 
     public CopyDatabasePreference(Context context) {
         super(context);
@@ -69,25 +88,80 @@ public class CopyDatabasePreference extends Preference {
         setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                copyDatabase(getContext());
+                requestFile(getContext());
                 return true;
             }
         });
     }
 
-    void copyDatabase(Context context) {
+    public void setParentFragment(Fragment fragment) {
+        mFragment = fragment;
+    }
+
+    void requestFile(Context context) {
+        try {
+            if (MediaStorage.isStorageAccessFrameworkAvailable()) {
+                MediaStorage.createFile(mFragment, DBFILE_MIME, DBFILE_NAME,
+                    REQUEST_COPY_DATABASE);
+                return;
+            }
+        }
+        catch (ActivityNotFoundException e) {
+            Log.w(TAG, "Storage Access Framework not working properly");
+            ReportingManager.logException(e);
+        }
+
+        // also used as a fallback if SAF is not working properly
+        Context ctx = getContext();
+        if (ctx != null) {
+            new FolderChooserDialog.Builder(ctx)
+                .tag(getClass().getName())
+                .initialPath(Environment.getExternalStorageDirectory().toString())
+                .show(mFragment.getParentFragmentManager());
+        }
+    }
+
+    public static void copyDatabase(Context context, File dbOutFile) {
+        OutputStream dbOut = null;
+        try {
+            dbOut = new FileOutputStream(dbOutFile);
+            copyDatabase(context, dbOut, dbOut.toString());
+        }
+        catch (IOException e) {
+            Toast.makeText(context, context
+                .getString(R.string.msg_copy_database_failed, e.toString()), Toast.LENGTH_LONG)
+                .show();
+        }
+        finally {
+            DataUtils.close(dbOut);
+        }
+    }
+
+    public static void copyDatabase(Context context, Uri dbOutFile) {
+        OutputStream dbOut = null;
+        try {
+            dbOut = context.getContentResolver().openOutputStream(dbOutFile);
+            copyDatabase(context, dbOut, dbOutFile.toString());
+        }
+        catch (IOException e) {
+            Toast.makeText(context, context
+                .getString(R.string.msg_copy_database_failed, e.toString()), Toast.LENGTH_LONG)
+                .show();
+        }
+        finally {
+            DataUtils.close(dbOut);
+        }
+    }
+
+    private static void copyDatabase(Context context, OutputStream dbOut, String filename) {
         MessagesProvider.lockForImport(context);
 
         InputStream dbIn = null;
-        OutputStream dbOut = null;
         try {
-            File dbOutFile = new File(Environment.getExternalStorageDirectory(), "kontalk-messages.db");
-
             dbIn = new FileInputStream(MessagesProvider.getDatabaseUri(context));
-            dbOut = new FileOutputStream(dbOutFile);
             DataUtils.copy(dbIn, dbOut);
             Toast.makeText(context, context
-                .getString(R.string.msg_copy_database_success, dbOutFile.toString()), Toast.LENGTH_LONG)
+                .getString(R.string.msg_copy_database_success, filename), Toast.LENGTH_LONG)
                 .show();
         }
         catch (IOException e) {

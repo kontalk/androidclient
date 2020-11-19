@@ -207,6 +207,7 @@ public class AccountFragment extends RootPreferenceFragment {
                         Context ctx = getContext();
                         if (ctx != null) {
                             new FolderChooserDialog.Builder(ctx)
+                                    .tag(AccountFragment.this.getClass().getName())
                                     .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
                                     .show(getParentFragmentManager());
                         }

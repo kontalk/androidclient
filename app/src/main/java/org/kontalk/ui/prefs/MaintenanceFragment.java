@@ -18,9 +18,13 @@
 
 package org.kontalk.ui.prefs;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
 
@@ -53,6 +57,10 @@ public class MaintenanceFragment extends RootPreferenceFragment {
             }
         });
 
+        // send our stuff to the copy database preference
+        final CopyDatabasePreference copyDatabase = findPreference("pref_copy_database");
+        copyDatabase.setParentFragment(this);
+
         if (Kontalk.get().getDefaultAccount() == null) {
             // no account, hide/disable some stuff
             restartMsgCenter.setEnabled(false);
@@ -74,4 +82,18 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                 .setTitle(R.string.pref_maintenance);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == CopyDatabasePreference.REQUEST_COPY_DATABASE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Context ctx = getActivity();
+                if (ctx != null && data != null && data.getData() != null) {
+                    CopyDatabasePreference.copyDatabase(ctx, data.getData());
+                }
+            }
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
 }
