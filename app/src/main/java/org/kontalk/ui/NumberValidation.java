@@ -981,7 +981,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRetrieveKeyError(RetrieveKeyError event) {
-        // FIXME maybe a somewhat more detailed explaination
+        // FIXME maybe a somewhat more detailed explanation
         onGenericError(event.exception);
     }
 

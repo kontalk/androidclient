@@ -323,7 +323,7 @@ public class MessagingNotification {
         sDisabled = false;
     }
 
-    /** Temporarly disable all notifications. */
+    /** Temporarily disable all notifications. */
     public static void disable() {
         sDisabled = true;
     }

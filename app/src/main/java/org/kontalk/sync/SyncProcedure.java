@@ -161,9 +161,9 @@ public class SyncProcedure {
                     item.presence = true;
                     // increment presence count
                     mPresenceCount++;
-                    // check user existance (only if subscription is "both")
+                    // check user existence (only if subscription is "both")
                     if (!item.matched && event.subscribedFrom && event.subscribedTo) {
-                        // verify actual user existance through last activity
+                        // verify actual user existence through last activity
                         String lastActivityId = StringUtils.randomString(6);
                         requestLastActivity(item.from, lastActivityId);
                         mNotMatched.add(lastActivityId);
@@ -246,7 +246,7 @@ public class SyncProcedure {
         }
     }
 
-    /** Last activity (for user existance verification). */
+    /** Last activity (for user existence verification). */
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public synchronized void onLastActivity(LastActivityEvent event) {
         if (mNotMatched.contains(event.id)) {

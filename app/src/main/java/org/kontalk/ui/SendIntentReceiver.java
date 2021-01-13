@@ -34,7 +34,7 @@ import org.kontalk.util.MediaStorage;
 
 
 /**
- * Static utilities used by activites that can receive ACTION_SEND intents,
+ * Static utilities used by activities that can receive ACTION_SEND intents,
  * namely {@link ConversationsActivity} (indirectly) and {@link ComposeMessage}.
  * Not the best solution, but it was too complicated to be used as parent class.
  */
