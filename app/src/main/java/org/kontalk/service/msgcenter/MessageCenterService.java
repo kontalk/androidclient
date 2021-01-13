@@ -1045,7 +1045,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             try {
                 // we must wait for the connection to actually close
                 join(millis);
-                // this won't send the last sm ack, preventing another interruptable zone
+                // this won't send the last sm ack, preventing another interruptible zone
                 mConn.suspendSmAck();
                 interrupt();
                 return !isAlive();

@@ -402,7 +402,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
     @Override
     protected void onArgumentsProcessed() {
-        // non existant thread - check for not synced contact
+        // non existent thread - check for not synced contact
         if (getThreadId() <= 0 && mConversation != null && mUserJID != null) {
             Contact contact = mConversation.getContact();
             if ((contact == null || !contact.isRegistered()) && mUserPhone != null) {
@@ -774,7 +774,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                 return;
         }
 
-        // temporarly disable peer observer because the next call will write to the threads table
+        // temporarily disable peer observer because the next call will write to the threads table
         unregisterPeerObserver();
 
         // mark request as pending accepted
