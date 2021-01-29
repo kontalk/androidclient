@@ -698,7 +698,7 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="chooser_error_no_share_app">No hay ninguna aplicación adecuada disponible para compartir el archivo.</string>
     <string name="pref_uitheme_label_dark">Oscuro</string>
     <string name="pref_uitheme_label_light">Claro</string>
-    <string name="pref_uitheme_label_default">Fijado por el ahorrador de la batería</string>
+    <string name="pref_uitheme_label_default">Fijado por el Ahorro de la Batería</string>
     <string name="pref_ui_theme">Tema</string>
     <string name="save_attachment">Guardar el archivo adjunto</string>
     <string name="pref_account_settings_system">Gestionar la cuenta</string>
