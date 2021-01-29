@@ -252,7 +252,7 @@
     <string name="attachment_contact">Contacte</string>
     <string name="attachment_audio">Àudio</string>
     <string name="chooser_send_picture">Envia imatge</string>
-    <string name="chooser_error_no_camera">No hi ha emmatzemament extern disponible. No es podran fer fotos amb la càmera.</string>
+    <string name="chooser_error_no_camera">No es pot escriure l\'arxiu d\'imatge. No es pot fer una foto des de la càmera.</string>
     <string name="chooser_select_link">Tria una acció</string>
     <string name="status_activity_title">Missatge d\'estat</string>
     <string name="hint_status_entry">Escriviu el missatge d\'estat ací</string>
@@ -610,8 +610,7 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="err_contacts_denied">Kontalk necessita accés als contactes per funcionar correctament. Com podria reconèixer la gent amb la qual fa xats??
 \nPodeu permetre l\'accés als contactes des de la configuració d\'Android.</string>
     <string name="warn_contacts_denied">Has negat l\'accés als contactes. Aquí no podreu veure els canvis dels contactes.</string>
-    <string name="err_storage_denied">Kontalk necessita accés a l\'emmagatzematge local per emmagatzemar els suports.
-\nPodeu permetre l\'accés a l\'emmagatzematge des de la configuració d\'Android.</string>
+    <string name="err_storage_denied">Kontalk necessita accés a l\'emmagatzematge local per a guardar els arxius multimèdia.</string>
     <string name="permission_messages_label">Accés als missatges de Kontalk</string>
     <string name="permission_messages_description">Podeu llegir i escriure a la base de dades de missatges Kontalk</string>
     <string name="permission_users_label">Accés a la informació dels usuaris de Kontalk</string>
