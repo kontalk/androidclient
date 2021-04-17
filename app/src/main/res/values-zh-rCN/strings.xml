@@ -574,7 +574,7 @@
     <string name="menu_map">地图</string>
     <string name="menu_satellite">卫星</string>
     <string name="pref_server_messages">接收服务器信息</string>
-    <string name="pref_title_server_messages">允许服务器管理员的消息推送，禁用该特性将导致错过重要信息。</string>
+    <string name="pref_title_server_messages">允许服务器管理员的消息推送。禁用该特性将导致错过重要信息。</string>
     <string name="notification_ticker_service_running">Kontalk正在后台运行</string>
     <string name="notification_text_service_running">触摸以打开</string>
     <string name="err_audio_record_permission">麦克风访问被拒绝。</string>
@@ -584,7 +584,7 @@
     <string name="msg_request_doze_failed_manual">请在下一个屏幕将Kontalk标记为未优化的。</string>
     <string name="msg_request_doze_failed_all">找不到电池优化设置，将切回系统设置界面。</string>
     <string name="pref_foreground_service">启用前台服务</string>
-    <string name="pref_title_foreground_service">如果你想在后台资源不足时让 Kontalk 保持活动，可以启动该选项，会在通知栏显示一条固定通知。</string>
+    <string name="pref_title_foreground_service">如果你想在后台资源不足时让 Kontalk 保持活动，可以启动该选项。会在通知栏显示一条固定通知。</string>
     <string name="pref_title_foreground_service_mandatory">Kontalk需要这些设置才能正常工作</string>
     <string name="menu_import_messages">导入信息</string>
     <string name="pref_copy_database">拷贝数据库</string>
@@ -687,7 +687,7 @@
     <string name="pref_uitheme_label_light">明亮</string>
     <string name="pref_uitheme_label_default">由省电模式设定</string>
     <string name="pref_ui_theme">主题</string>
-    <string name="text_contacts_recents_empty">最近的聊天将出现在这里。你可以通过使用上方按钮&lt;/b&gt;切换到联系人&lt;/b&gt;.<b>switch to contacts</b> by using the button above.</string>
+    <string name="text_contacts_recents_empty">最近的聊天将出现在这里。你可以&lt;/b&gt;切换到联系人&lt;/b&gt;，方法是使用上方按钮。<b>switch to contacts</b> by using the button above.</string>
     <string name="menu_switch_recents">最近</string>
     <string name="menu_switch_contacts">联系人</string>
     <string name="contacts_list_recents_title">最近对话</string>
