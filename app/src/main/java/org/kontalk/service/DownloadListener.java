@@ -47,10 +47,10 @@ public interface DownloadListener {
     void completed(String url, String mime, File destination);
 
     /**
-     * Called if an error occured while download.
+     * Called if an error occurred while download.
      * @param url
      * @param destination
-     * @param exc the exception occured
+     * @param exc the exception occurred
      */
     void error(String url, File destination, Throwable exc);
 
